@@ -1,0 +1,7 @@
+# Chaves privadas e certificados
+# Coloque aqui os ficheiros obtidos no Mastercard Developer Portal:
+# - signing-key.p12
+# - client-encryption.pem
+# - decryption-key.p12
+#
+# NUNCA faça commit destes ficheiros!

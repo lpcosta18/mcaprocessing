@@ -1,0 +1,5 @@
+node_modules/
+.env
+keys/*.p12
+keys/*.pem
+keys/*.key
