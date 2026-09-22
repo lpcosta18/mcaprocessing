@@ -1,0 +1,17 @@
+﻿{
+  "Logging": {
+    "LogLevel": {
+      "Default": "Information",
+      "Microsoft.AspNetCore": "Warning"
+    }
+  },
+  "AllowedHosts": "*",
+  "Mastercard": {
+    "BaseUrl": "https://sandbox.api.mastercard.com/global-processing/core/",
+    "ConsumerKey": "",
+    "SigningKeyPath": "",
+    "SigningKeyAlias": "",
+    "SigningKeyPassword": "",
+    "UseMock": true
+  }
+}

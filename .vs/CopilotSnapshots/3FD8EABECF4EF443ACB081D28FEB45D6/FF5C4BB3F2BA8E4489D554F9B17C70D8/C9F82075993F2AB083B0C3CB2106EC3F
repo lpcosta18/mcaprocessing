@@ -1,0 +1,16 @@
+﻿{
+  "Logging": {
+    "LogLevel": {
+      "Default": "Information",
+      "Microsoft.AspNetCore": "Warning"
+    }
+  },
+  "Mastercard": {
+    "BaseUrl": "https://sandbox.api.mastercard.com/global-processing/core/",
+    "ConsumerKey": "REPLACE_WITH_CONSUMER_KEY_FROM_DEVELOPER_PORTAL",
+    "SigningKeyPath": "REPLACE_WITH_ABSOLUTE_PATH_TO_MASTERCARD_P12",
+    "SigningKeyAlias": "REPLACE_WITH_KEY_ALIAS",
+    "SigningKeyPassword": "REPLACE_WITH_P12_EXPORT_PASSWORD",
+    "UseMock": false
+  }
+}

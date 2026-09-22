@@ -1,0 +1,27 @@
+﻿namespace Unico.Mastercard.Api.Configuration;
+
+/// <summary>
+/// Settings for connecting to the Mastercard Processing Core API.
+/// </summary>
+public sealed class MastercardOptions
+{
+    public const string SectionName = "Mastercard";
+
+    /// <summary>Base URL of the Processing Core API (sandbox, MTF, or production).</summary>
+    public string BaseUrl { get; set; } = "https://sandbox.api.mastercard.com/proc-core";
+
+    /// <summary>Consumer key issued by the Mastercard Developers portal.</summary>
+    public string ConsumerKey { get; set; } = string.Empty;
+
+    /// <summary>File path to the PKCS#12 (.p12) private signing key.</summary>
+    public string SigningKeyPath { get; set; } = string.Empty;
+
+    /// <summary>Alias of the key entry inside the PKCS#12 keystore.</summary>
+    public string SigningKeyAlias { get; set; } = string.Empty;
+
+    /// <summary>Password protecting the PKCS#12 keystore.</summary>
+    public string SigningKeyPassword { get; set; } = string.Empty;
+
+    /// <summary>When true, endpoints return canned sandbox-like data instead of calling Mastercard.</summary>
+    public bool UseMock { get; set; } = true;
+}

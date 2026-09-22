@@ -1,0 +1,34 @@
+﻿using Mastercard.Developer.ClientEncryption.Core.Encryption;
+using Mastercard.Developer.ClientEncryption.Core.Encryption.JWE;
+using System.Security.Cryptography;
+using System.Security.Cryptography.X509Certificates;
+using System.Reflection;
+
+// Generate a throwaway RSA keypair + self-signed cert for testing round trip
+using var rsa = RSA.Create(2048);
+var req = new CertificateRequest("CN=test", rsa, HashAlgorithmName.SHA256, RSASignaturePadding.Pkcs1);
+var cert = req.CreateSelfSigned(DateTimeOffset.Now.AddDays(-1), DateTimeOffset.Now.AddDays(1));
+
+var config = JweConfigBuilder.AJweEncryptionConfig()
+    .WithEncryptionCertificate(cert)
+    .WithDecryptionKey(rsa)
+    .WithEncryptionPath("$", "$")
+    .WithDecryptionPath("$", "$")
+    .Build();
+
+// dump fields
+foreach (var f in config.GetType().GetFields(BindingFlags.NonPublic | BindingFlags.Instance | BindingFlags.Public))
+{
+    Console.WriteLine($"{f.Name} = {f.GetValue(config)}");
+}
+foreach (var p in config.GetType().GetProperties(BindingFlags.NonPublic | BindingFlags.Instance | BindingFlags.Public))
+{
+    try { Console.WriteLine($"{p.Name} = {p.GetValue(config)}"); } catch { }
+}
+
+var plain = "{\"pinBlock\":\"1234ABCD\"}";
+var encrypted = JweEncryption.EncryptPayload(plain, config);
+Console.WriteLine("ENCRYPTED: " + encrypted);
+
+var decrypted = JweEncryption.DecryptPayload(encrypted, config);
+Console.WriteLine("DECRYPTED: " + decrypted);

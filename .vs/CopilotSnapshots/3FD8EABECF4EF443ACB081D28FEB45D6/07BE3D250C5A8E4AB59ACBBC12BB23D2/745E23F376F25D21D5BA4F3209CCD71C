@@ -1,0 +1,50 @@
+﻿using Unico.Mastercard.Api.Models;
+
+namespace Unico.Mastercard.Api.Client;
+
+/// <summary>Returns canned data shaped like the Mastercard Processing Core sandbox responses.</summary>
+public sealed class MockProcessingCoreClient : IProcessingCoreClient
+{
+    public Task<AccountContractsResponse> GetAccountContractsAsync(
+        string clientId, int offset, int limit, CancellationToken cancellationToken = default)
+    {
+        var contract = new AccountContract(
+            AccountContractId: 60001,
+            AccountContractName: "North Division Account",
+            AccountContractNumber: "ABC_121235694296313",
+            Currency: "EUR",
+            ProductCode: "STD-DEBCH-EUR",
+            ProductName: "Standard Debit Account",
+            DateOpen: "2019-06-25",
+            DateClose: "2021-12-31",
+            AccountContractStatusData: new AccountContractStatus("00", "Account OK", "00", "Account OK"),
+            AccountContractBalances: new AccountContractBalances(
+                Available: 1401.21m,
+                Balance: 15123.56m,
+                BlockedAmount: 751.28m,
+                CreditLimit: 1231.78m,
+                AdditionalLimit: 123.12m,
+                PastDue: 241.21m,
+                TotalDue: 381.14m),
+            AccountContractOwner: new AccountContractOwner(453135, "ABC_685400081", "John Doe"));
+
+        var response = new AccountContractsResponse(
+            Count: 1,
+            Limit: limit,
+            Offset: offset,
+            Total: 1,
+            ClientAccountContracts: [contract]);
+
+        return Task.FromResult(response);
+    }
+
+    public Task<ContractBalancesResponse> GetContractBalancesAsync(
+        string contractId, IReadOnlyCollection<string> balanceCodes, CancellationToken cancellationToken = default)
+    {
+        var balances = balanceCodes
+            .Select((code, index) => new ContractBalance(code, "EUR", 89516416 + index, 9811.31m))
+            .ToList();
+
+        return Task.FromResult(new ContractBalancesResponse(balances));
+    }
+}

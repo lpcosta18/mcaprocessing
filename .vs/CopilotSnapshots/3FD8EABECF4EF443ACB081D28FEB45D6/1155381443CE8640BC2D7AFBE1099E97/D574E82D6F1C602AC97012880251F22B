@@ -1,0 +1,499 @@
+﻿using Mastercard.Developer.OAuth1Signer.Core.Signers;
+using Mastercard.Developer.OAuth1Signer.Core.Utils;
+using Microsoft.AspNetCore.Diagnostics;
+using Microsoft.Extensions.Options;
+using System.Text.Json;
+using Unico.Mastercard.Api.Client;
+using Unico.Mastercard.Api.Configuration;
+using Unico.Mastercard.Api.Models;
+
+var builder = WebApplication.CreateBuilder(args);
+
+builder.Services.AddOpenApi();
+
+builder.Services
+    .AddOptions<MastercardOptions>()
+    .Bind(builder.Configuration.GetSection(MastercardOptions.SectionName));
+
+var mastercardOptions = builder.Configuration
+    .GetSection(MastercardOptions.SectionName)
+    .Get<MastercardOptions>() ?? new MastercardOptions();
+
+if (mastercardOptions.UseMock)
+{
+    builder.Services.AddSingleton<IProcessingCoreClient, MockProcessingCoreClient>();
+}
+else
+{
+    // Signing key is loaded once and reused for every outgoing request.
+    builder.Services.AddSingleton(sp =>
+    {
+        var options = sp.GetRequiredService<IOptions<MastercardOptions>>().Value;
+        var signingKey = AuthenticationUtils.LoadSigningKey(
+            options.SigningKeyPath, options.SigningKeyAlias, options.SigningKeyPassword);
+        return new NetHttpClientSigner(options.ConsumerKey, signingKey);
+    });
+    builder.Services.AddTransient<OAuth1SigningHandler>();
+    builder.Services
+        .AddHttpClient<IProcessingCoreClient, ProcessingCoreClient>((sp, client) =>
+        {
+            var options = sp.GetRequiredService<IOptions<MastercardOptions>>().Value;
+            client.BaseAddress = new Uri(options.BaseUrl);
+        })
+        .AddHttpMessageHandler<OAuth1SigningHandler>();
+}
+
+var app = builder.Build();
+
+app.MapOpenApi();
+app.UseSwaggerUI(options =>
+{
+    options.SwaggerEndpoint("/openapi/v1.json", "Mastercard Processing Core (Unico wrapper) v1");
+    options.RoutePrefix = "swagger";
+});
+
+app.UseExceptionHandler(errorApp => errorApp.Run(async context =>
+{
+    var exception = context.Features.Get<IExceptionHandlerFeature>()?.Error;
+
+    var (statusCode, title, detail) = exception switch
+    {
+        MastercardApiException mex => (
+            mex.StatusCode is >= 400 and < 600 ? mex.StatusCode : StatusCodes.Status502BadGateway,
+            "Mastercard Processing Core API error",
+            mex.ResponseBody),
+        _ => (StatusCodes.Status500InternalServerError, "Unexpected error", exception?.Message)
+    };
+
+    context.Response.StatusCode = statusCode;
+    await Results.Problem(title: title, detail: detail, statusCode: statusCode).ExecuteAsync(context);
+}));
+
+app.UseHttpsRedirection();
+
+var api = app.MapGroup("/api/processing-core").WithTags("Mastercard Processing Core");
+
+api.MapGet("/clients/{clientId}/account-contracts", async (
+        string clientId, IProcessingCoreClient client, CancellationToken cancellationToken, int offset = 0, int limit = 10) =>
+    {
+        var result = await client.GetAccountContractsAsync(clientId, offset, limit, cancellationToken);
+        return Results.Ok(result);
+    })
+    .WithName("GetAccountContracts")
+    .WithSummary("Retrieve a list of account contracts for a client")
+    .Produces<AccountContractsResponse>();
+
+api.MapGet("/contracts/{contractId}/balances", async (
+        string contractId, string balanceCodes, IProcessingCoreClient client, CancellationToken cancellationToken) =>
+    {
+        var codes = balanceCodes.Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
+        var result = await client.GetContractBalancesAsync(contractId, codes, cancellationToken);
+        return Results.Ok(result);
+    })
+    .WithName("GetContractBalances")
+    .WithSummary("Retrieve balances for an account or card contract")
+    .Produces<ContractBalancesResponse>();
+
+// --- Client ---
+
+api.MapPost("/clients", async (JsonElement body, IProcessingCoreClient client, CancellationToken ct, string? idempotencyKey = null) =>
+        Results.Ok(await client.CreateClientAsync(body, idempotencyKey, ct)))
+    .WithName("CreateClient").WithSummary("Creates a client").WithTags("Client");
+
+api.MapGet("/clients/{clientId:long}", async (long clientId, IProcessingCoreClient client, CancellationToken ct) =>
+        Results.Ok(await client.GetClientAsync(clientId, ct)))
+    .WithName("GetClient").WithSummary("Retrieves a client").WithTags("Client");
+
+api.MapPatch("/clients/{clientId:long}", async (long clientId, JsonElement body, IProcessingCoreClient client, CancellationToken ct, string? ifMatch = null, string? idempotencyKey = null) =>
+    {
+        await client.UpdateClientAsync(clientId, body, ifMatch, idempotencyKey, ct);
+        return Results.NoContent();
+    })
+    .WithName("UpdateClient").WithSummary("Updates a client").WithTags("Client");
+
+api.MapGet("/clients/{clientId:long}/card-contracts", async (long clientId, IProcessingCoreClient client, CancellationToken ct, string? creationDateFrom = null, string? statuses = null, int? limit = null, int? offset = null) =>
+        Results.Ok(await client.GetCardContractsByClientAsync(clientId, creationDateFrom, statuses, limit, offset, ct)))
+    .WithName("GetCardContractsByClient").WithSummary("Retrieves a list of card contracts for a specified client").WithTags("Client");
+
+api.MapPut("/clients/{clientId:long}/online-pin-attempts-counter", async (long clientId, IProcessingCoreClient client, CancellationToken ct) =>
+    {
+        await client.ClearOnlinePinAttemptsForClientAsync(clientId, ct);
+        return Results.NoContent();
+    })
+    .WithName("ClearOnlinePinAttemptsForClient").WithSummary("Resets Online PIN Try Counter").WithTags("Client");
+
+// --- Contract ---
+
+api.MapPost("/contracts/{contractId:long}/events", async (long contractId, JsonElement body, IProcessingCoreClient client, CancellationToken ct, string? idempotencyKey = null) =>
+        Results.Ok(await client.OpenEventAsync(contractId, body, idempotencyKey, ct)))
+    .WithName("OpenEvent").WithSummary("Opens an event for a specified contract").WithTags("Contract");
+
+api.MapGet("/contracts/{contractId:long}/financials", async (long contractId, IProcessingCoreClient client, CancellationToken ct) =>
+        Results.Ok(await client.GetContractFinancialsAsync(contractId, ct)))
+    .WithName("GetContractFinancials").WithSummary("Retrieves contract's financial information").WithTags("Contract");
+
+api.MapGet("/contracts/{contractId:long}/technical-accounts", async (long contractId, IProcessingCoreClient client, CancellationToken ct, string? technicalAccountCode = null) =>
+        Results.Ok(await client.GetTechnicalAccountsAsync(contractId, technicalAccountCode, ct)))
+    .WithName("GetTechnicalAccounts").WithSummary("Retrieves technical accounts for a specified contract").WithTags("Contract");
+
+api.MapGet("/contracts/{contractId:long}/tree-summaries", async (long contractId, IProcessingCoreClient client, CancellationToken ct, int? limit = null, int? offset = null) =>
+        Results.Ok(await client.GetContractTreeSummaryAsync(contractId, limit, offset, ct)))
+    .WithName("GetContractTreeSummary").WithSummary("Retrieves summary of the contracts for a specified contract").WithTags("Contract");
+
+api.MapPut("/contracts/{contractId:long}/main-contract", async (long contractId, JsonElement body, IProcessingCoreClient client, CancellationToken ct) =>
+    {
+        await client.ChangeContractMainContractAsync(contractId, body, ct);
+        return Results.NoContent();
+    })
+    .WithName("ChangeContractMainContract").WithSummary("Relinks a subaccount or card contract to another account contract").WithTags("Contract");
+
+api.MapPut("/contracts/{contractId:long}/authentication-method", async (long contractId, JsonElement body, IProcessingCoreClient client, CancellationToken ct) =>
+    {
+        await client.SetAuthenticationMethodAsync(contractId, body, ct);
+        return Results.NoContent();
+    })
+    .WithName("SetAuthenticationMethod").WithSummary("Sets up a contract authentication method").WithTags("Contract");
+
+api.MapGet("/contracts/{contractId:long}/authentication-parameter-values", async (long contractId, string authenticationParameterName, string authenticationTypeCode, IProcessingCoreClient client, CancellationToken ct) =>
+        Results.Ok(await client.GetAuthenticationParameterValueAsync(contractId, authenticationParameterName, authenticationTypeCode, ct)))
+    .WithName("GetAuthenticationParameterValue").WithSummary("Retrieves the value of a given authentication parameter").WithTags("Contract");
+
+// --- Account contract ---
+
+api.MapPost("/accounts", async (JsonElement body, IProcessingCoreClient client, CancellationToken ct, string? idempotencyKey = null) =>
+        Results.Ok(await client.CreateAccountContractAsync(body, idempotencyKey, ct)))
+    .WithName("CreateAccountContract").WithSummary("Creates an account contract").WithTags("Account contract");
+
+api.MapGet("/accounts/{accountContractId:long}", async (long accountContractId, IProcessingCoreClient client, CancellationToken ct) =>
+        Results.Ok(await client.GetAccountContractAsync(accountContractId, ct)))
+    .WithName("GetAccountContract").WithSummary("Retrieves an account contract").WithTags("Account contract");
+
+api.MapPatch("/accounts/{accountContractId:long}", async (long accountContractId, JsonElement body, IProcessingCoreClient client, CancellationToken ct, string? ifMatch = null, string? idempotencyKey = null) =>
+    {
+        await client.UpdateAccountContractAsync(accountContractId, body, ifMatch, idempotencyKey, ct);
+        return Results.NoContent();
+    })
+    .WithName("UpdateAccountContract").WithSummary("Updates an account contract").WithTags("Account contract");
+
+api.MapPut("/accounts/{accountContractId:long}/status", async (long accountContractId, JsonElement body, IProcessingCoreClient client, CancellationToken ct) =>
+    {
+        await client.ChangeAccountContractStatusAsync(accountContractId, body, ct);
+        return Results.NoContent();
+    })
+    .WithName("ChangeAccountContractStatus").WithSummary("Changes an account contract status").WithTags("Account contract");
+
+api.MapGet("/accounts/{accountContractId:long}/statuses", async (long accountContractId, IProcessingCoreClient client, CancellationToken ct) =>
+        Results.Ok(await client.GetAccountContractStatusAsync(accountContractId, ct)))
+    .WithName("GetAccountContractStatus").WithSummary("Retrieves account contract status").WithTags("Account contract");
+
+api.MapPut("/accounts/{accountContractId:long}/client-identifier", async (long accountContractId, JsonElement body, IProcessingCoreClient client, CancellationToken ct) =>
+    {
+        await client.ChangeAccountContractClientAsync(accountContractId, body, ct);
+        return Results.NoContent();
+    })
+    .WithName("ChangeAccountContractClient").WithSummary("Relinks an account contract to another client").WithTags("Account contract");
+
+api.MapGet("/accounts/{accountContractId:long}/sub-accounts", async (long accountContractId, IProcessingCoreClient client, CancellationToken ct, int? limit = null, int? offset = null) =>
+        Results.Ok(await client.GetSubAccountContractsAsync(accountContractId, limit, offset, ct)))
+    .WithName("GetSubAccountContracts").WithSummary("Retrieves a list of subaccount contracts for a specified account contract").WithTags("Account contract");
+
+api.MapGet("/accounts/{accountContractId:long}/card-contracts", async (long accountContractId, IProcessingCoreClient client, CancellationToken ct, string? creationDateFrom = null, string? statuses = null, int? limit = null, int? offset = null) =>
+        Results.Ok(await client.GetCardContractsByAccountAsync(accountContractId, creationDateFrom, statuses, limit, offset, ct)))
+    .WithName("GetCardContractsByAccount").WithSummary("Retrieves a list of card contracts for a specified account contract").WithTags("Account contract");
+
+// --- Card contract ---
+
+api.MapPost("/cards", async (JsonElement body, IProcessingCoreClient client, CancellationToken ct, string? idempotencyKey = null) =>
+        Results.Ok(await client.CreateCardContractAsync(body, idempotencyKey, ct)))
+    .WithName("CreateCardContract").WithSummary("Creates a card contract").WithTags("Card contract");
+
+api.MapGet("/cards/{cardContractId:long}", async (long cardContractId, IProcessingCoreClient client, CancellationToken ct, string? fieldsSelection = null, string? customerPublicRsaKey = null) =>
+        Results.Ok(await client.GetCardContractAsync(cardContractId, fieldsSelection, customerPublicRsaKey, ct)))
+    .WithName("GetCardContract").WithSummary("Retrieves a card contract").WithTags("Card contract");
+
+api.MapPatch("/cards/{cardContractId:long}", async (long cardContractId, JsonElement body, IProcessingCoreClient client, CancellationToken ct, string? ifMatch = null, string? idempotencyKey = null) =>
+    {
+        await client.UpdateCardContractAsync(cardContractId, body, ifMatch, idempotencyKey, ct);
+        return Results.NoContent();
+    })
+    .WithName("UpdateCardContract").WithSummary("Updates a card contract").WithTags("Card contract");
+
+api.MapPost("/cards/details-verifications", async (JsonElement body, IProcessingCoreClient client, CancellationToken ct, string? idempotencyKey = null) =>
+        Results.Ok(await client.VerifyCardDetailsAsync(body, idempotencyKey, ct)))
+    .WithName("VerifyCardDetails").WithSummary("Verifies card details").WithTags("Card contract");
+
+api.MapPut("/cards/{cardContractId:long}/status", async (long cardContractId, JsonElement body, IProcessingCoreClient client, CancellationToken ct) =>
+    {
+        await client.ChangeCardContractStatusAsync(cardContractId, body, ct);
+        return Results.NoContent();
+    })
+    .WithName("ChangeCardContractStatus").WithSummary("Sets new status for the card contract").WithTags("Card contract");
+
+api.MapGet("/cards/{cardContractId:long}/statuses", async (long cardContractId, IProcessingCoreClient client, CancellationToken ct) =>
+        Results.Ok(await client.GetCardContractStatusAsync(cardContractId, ct)))
+    .WithName("GetCardContractStatus").WithSummary("Retrieves card contract status").WithTags("Card contract");
+
+api.MapPut("/cards/{cardContractId:long}/client-identifier", async (long cardContractId, JsonElement body, IProcessingCoreClient client, CancellationToken ct) =>
+    {
+        await client.ChangeCardContractClientAsync(cardContractId, body, ct);
+        return Results.NoContent();
+    })
+    .WithName("ChangeCardContractClient").WithSummary("Relinks a card contract to another client").WithTags("Card contract");
+
+api.MapPut("/cards/{cardContractId:long}/main-contract", async (long cardContractId, JsonElement body, IProcessingCoreClient client, CancellationToken ct) =>
+    {
+        await client.ChangeCardContractMainContractAsync(cardContractId, body, ct);
+        return Results.NoContent();
+    })
+    .WithName("ChangeCardContractMainContract").WithSummary("Relinks a card contract to another account contract").WithTags("Card contract");
+
+api.MapPut("/cards/{cardContractId:long}/online-pin-attempts-counter", async (long cardContractId, IProcessingCoreClient client, CancellationToken ct) =>
+    {
+        await client.ClearOnlinePinAttemptsAsync(cardContractId, ct);
+        return Results.NoContent();
+    })
+    .WithName("ClearOnlinePinAttempts").WithSummary("Resets Online PIN Try Counter").WithTags("Card contract");
+
+api.MapPut("/cards/{cardContractId:long}/active", async (long cardContractId, IProcessingCoreClient client, CancellationToken ct) =>
+    {
+        await client.ActivateCardAsync(cardContractId, ct);
+        return Results.NoContent();
+    })
+    .WithName("ActivateCard").WithSummary("Activates a card plastic and unlocks the card for transaction use").WithTags("Card plastic");
+
+api.MapPut("/cards/{cardContractId:long}/pin", async (long cardContractId, JsonElement body, int keyIndex, IProcessingCoreClient client, CancellationToken ct) =>
+    {
+        await client.SetPinAsync(cardContractId, body, keyIndex, ct);
+        return Results.NoContent();
+    })
+    .WithName("SetPin").WithSummary("Sets up new PIN for a card plastic").WithTags("Card plastic");
+
+api.MapPost("/cards/{cardContractId:long}/pins/searches", async (long cardContractId, string customerPublicRsaKey, IProcessingCoreClient client, CancellationToken ct, string? idempotencyKey = null) =>
+        Results.Ok(await client.GetPinAsync(cardContractId, customerPublicRsaKey, idempotencyKey, ct)))
+    .WithName("GetPin").WithSummary("Retrieves a PIN for a card plastic").WithTags("Card plastic");
+
+api.MapPost("/cards/{cardContractId:long}/pins/verifications", async (long cardContractId, JsonElement body, int keyIndex, IProcessingCoreClient client, CancellationToken ct, string? idempotencyKey = null) =>
+        Results.Ok(await client.VerifyPinAsync(cardContractId, body, keyIndex, idempotencyKey, ct)))
+    .WithName("VerifyPin").WithSummary("Verifies a PIN").WithTags("Card plastic");
+
+api.MapPost("/cards/{cardContractId:long}/card-verification-codes/searches", async (long cardContractId, IProcessingCoreClient client, CancellationToken ct, string? customerPublicRsaKey = null, string? idempotencyKey = null) =>
+        Results.Ok(await client.GetCvcAsync(cardContractId, customerPublicRsaKey, idempotencyKey, ct)))
+    .WithName("GetCvc").WithSummary("Retrieves a CVC2 for a card plastic").WithTags("Card plastic");
+
+api.MapPost("/cards/{cardContractId:long}/card-verification-codes/verifications", async (long cardContractId, JsonElement body, IProcessingCoreClient client, CancellationToken ct, string? idempotencyKey = null) =>
+        Results.Ok(await client.VerifyCvcAsync(cardContractId, body, idempotencyKey, ct)))
+    .WithName("VerifyCvc").WithSummary("Verifies a CVC2 of specific card plastic").WithTags("Card plastic");
+
+api.MapPost("/cards/{cardContractId:long}/plastics", async (long cardContractId, JsonElement body, IProcessingCoreClient client, CancellationToken ct, string? idempotencyKey = null) =>
+        Results.Ok(await client.ReissueCardAsync(cardContractId, body, idempotencyKey, ct)))
+    .WithName("ReissueCard").WithSummary("Reissues a card").WithTags("Card plastic");
+
+api.MapGet("/cards/{cardContractId:long}/plastics", async (long cardContractId, IProcessingCoreClient client, CancellationToken ct) =>
+        Results.Ok(await client.GetCardPlasticsAsync(cardContractId, ct)))
+    .WithName("GetCardPlastics").WithSummary("Retrieves information about all card plastics for a specified card contract").WithTags("Card plastic");
+
+// --- Address ---
+
+api.MapPost("/clients/{clientId:long}/addresses", async (long clientId, JsonElement body, IProcessingCoreClient client, CancellationToken ct, string? idempotencyKey = null) =>
+        Results.Ok(await client.AddClientAddressAsync(clientId, body, idempotencyKey, ct)))
+    .WithName("AddClientAddress").WithSummary("Creates an address for a client").WithTags("Address");
+
+api.MapGet("/clients/{clientId:long}/addresses", async (long clientId, IProcessingCoreClient client, CancellationToken ct) =>
+        Results.Ok(await client.GetClientAddressesAsync(clientId, ct)))
+    .WithName("GetClientAddresses").WithSummary("Retrieves a list of addresses for the client").WithTags("Address");
+
+api.MapPut("/clients/{clientId:long}/addresses/{addressType}", async (long clientId, string addressType, JsonElement body, IProcessingCoreClient client, CancellationToken ct) =>
+    {
+        await client.UpdateClientAddressAsync(clientId, addressType, body, ct);
+        return Results.NoContent();
+    })
+    .WithName("UpdateClientAddress").WithSummary("Updates an address of a selected type for the client").WithTags("Address");
+
+api.MapPost("/contracts/{contractId:long}/addresses", async (long contractId, JsonElement body, IProcessingCoreClient client, CancellationToken ct, string? idempotencyKey = null) =>
+        Results.Ok(await client.AddContractAddressAsync(contractId, body, idempotencyKey, ct)))
+    .WithName("AddContractAddress").WithSummary("Creates an address for the contract").WithTags("Address");
+
+api.MapGet("/contracts/{contractId:long}/addresses", async (long contractId, IProcessingCoreClient client, CancellationToken ct) =>
+        Results.Ok(await client.GetContractAddressesAsync(contractId, ct)))
+    .WithName("GetContractAddresses").WithSummary("Retrieves a list of addresses for the contract").WithTags("Address");
+
+api.MapPut("/contracts/{contractId:long}/addresses/{addressType}", async (long contractId, string addressType, JsonElement body, IProcessingCoreClient client, CancellationToken ct) =>
+    {
+        await client.UpdateContractAddressAsync(contractId, addressType, body, ct);
+        return Results.NoContent();
+    })
+    .WithName("UpdateContractAddress").WithSummary("Updates an address of a selected type for the contract").WithTags("Address");
+
+// --- Classifier ---
+
+api.MapPut("/clients/{clientId:long}/classifiers/{classifierCode}", async (long clientId, string classifierCode, JsonElement body, IProcessingCoreClient client, CancellationToken ct) =>
+    {
+        await client.SetClientClassifierAsync(clientId, classifierCode, body, ct);
+        return Results.NoContent();
+    })
+    .WithName("SetClientClassifier").WithSummary("Sets up a client classifier").WithTags("Classifier");
+
+api.MapGet("/clients/{clientId:long}/classifiers", async (long clientId, IProcessingCoreClient client, CancellationToken ct, string? classifierCodes = null) =>
+        Results.Ok(await client.GetClientClassifiersAsync(clientId, classifierCodes, ct)))
+    .WithName("GetClientClassifiers").WithSummary("Retrieves a client classifier").WithTags("Classifier");
+
+api.MapPut("/contracts/{contractId:long}/classifiers/{classifierCode}", async (long contractId, string classifierCode, JsonElement body, IProcessingCoreClient client, CancellationToken ct) =>
+    {
+        await client.SetContractClassifierAsync(contractId, classifierCode, body, ct);
+        return Results.NoContent();
+    })
+    .WithName("SetContractClassifier").WithSummary("Sets up a contract's classifier").WithTags("Classifier");
+
+api.MapGet("/contracts/{contractId:long}/classifiers", async (long contractId, IProcessingCoreClient client, CancellationToken ct, string? classifierCodes = null) =>
+        Results.Ok(await client.GetContractClassifiersAsync(contractId, classifierCodes, ct)))
+    .WithName("GetContractClassifiers").WithSummary("Retrieves contract's classifier").WithTags("Classifier");
+
+// --- Custom data ---
+
+api.MapPost("/clients/{clientId:long}/custom-data", async (long clientId, JsonElement body, IProcessingCoreClient client, CancellationToken ct, string? idempotencyKey = null) =>
+        Results.Ok(await client.SetClientCustomDataAsync(clientId, body, idempotencyKey, ct)))
+    .WithName("SetClientCustomData").WithSummary("Sets up a custom data for a client").WithTags("Custom Data");
+
+api.MapGet("/clients/{clientId:long}/custom-data/{tagName}", async (long clientId, string tagName, IProcessingCoreClient client, CancellationToken ct) =>
+        Results.Ok(await client.GetClientCustomDataAsync(clientId, tagName, ct)))
+    .WithName("GetClientCustomData").WithSummary("Retrieves selected custom data for a client").WithTags("Custom Data");
+
+api.MapPost("/contracts/{contractId:long}/custom-data", async (long contractId, JsonElement body, IProcessingCoreClient client, CancellationToken ct, string? idempotencyKey = null) =>
+        Results.Ok(await client.SetContractCustomDataAsync(contractId, body, idempotencyKey, ct)))
+    .WithName("SetContractCustomData").WithSummary("Sets up a custom data for a specified contract").WithTags("Custom Data");
+
+api.MapGet("/contracts/{contractId:long}/custom-data/{tagName}", async (long contractId, string tagName, IProcessingCoreClient client, CancellationToken ct) =>
+        Results.Ok(await client.GetContractCustomDataAsync(contractId, tagName, ct)))
+    .WithName("GetContractCustomData").WithSummary("Retrieves selected custom data for a specified contract").WithTags("Custom Data");
+
+// --- Parameter ---
+
+api.MapPut("/contracts/{contractId:long}/parameters/{parameterCode}", async (long contractId, string parameterCode, JsonElement body, IProcessingCoreClient client, CancellationToken ct) =>
+    {
+        await client.SetContractParameterAsync(contractId, parameterCode, body, ct);
+        return Results.NoContent();
+    })
+    .WithName("SetContractParameter").WithSummary("Sets up or changes a contract's parameter value").WithTags("Parameter");
+
+api.MapGet("/contracts/{contractId:long}/parameters", async (long contractId, IProcessingCoreClient client, CancellationToken ct, string? parameterCodes = null) =>
+        Results.Ok(await client.GetContractParametersAsync(contractId, parameterCodes, ct)))
+    .WithName("GetContractParameters").WithSummary("Retrieves information about contract parameter(s)").WithTags("Parameter");
+
+// --- Transaction ---
+
+api.MapPost("/contracts/{contractId:long}/debits", async (long contractId, JsonElement body, IProcessingCoreClient client, CancellationToken ct, string? idempotencyKey = null) =>
+        Results.Ok(await client.DebitContractAsync(contractId, body, idempotencyKey, ct)))
+    .WithName("DebitContract").WithSummary("Posts debit transaction to a contract").WithTags("Transaction");
+
+api.MapPost("/contracts/{contractId:long}/credits", async (long contractId, JsonElement body, IProcessingCoreClient client, CancellationToken ct, string? idempotencyKey = null) =>
+        Results.Ok(await client.CreditContractAsync(contractId, body, idempotencyKey, ct)))
+    .WithName("CreditContract").WithSummary("Posts credit transaction to a contract").WithTags("Transaction");
+
+api.MapPost("/contracts/{contractId:long}/charge-fees", async (long contractId, JsonElement body, IProcessingCoreClient client, CancellationToken ct, string? idempotencyKey = null) =>
+        Results.Ok(await client.ChargeFeeAsync(contractId, body, idempotencyKey, ct)))
+    .WithName("ChargeFee").WithSummary("Charges specified contract with a fee configured in the MP's CMS").WithTags("Transaction");
+
+api.MapGet("/contracts/{contractId:long}/transactions", async (
+        long contractId, IProcessingCoreClient client, CancellationToken ct,
+        string? transactionDateFrom = null, string? transactionDateTo = null, string? transactionAuthorizationFilterMode = null,
+        bool? transactionAuthorized = null, int? limit = null, int? offset = null, string? transactionTypeCodes = null) =>
+        Results.Ok(await client.GetTransactionsAsync(contractId, transactionDateFrom, transactionDateTo, transactionAuthorizationFilterMode, transactionAuthorized, limit, offset, transactionTypeCodes, ct)))
+    .WithName("GetTransactions").WithSummary("Retrieves transactions for a specified contract").WithTags("Transaction");
+
+api.MapGet("/contracts/{contractId:long}/transaction-documents", async (
+        long contractId, IProcessingCoreClient client, CancellationToken ct,
+        string? transactionDateFrom = null, string? transactionDateTo = null, string? transactionAuthorizationFilterMode = null,
+        bool? transactionCollectAuthorizations = null, bool? contractHierarchy = null, string? direction = null,
+        int? limit = null, int? offset = null, string? transactionTypeCodes = null) =>
+        Results.Ok(await client.GetContractTransactionDocumentsAsync(contractId, transactionDateFrom, transactionDateTo, transactionAuthorizationFilterMode, transactionCollectAuthorizations, contractHierarchy, direction, limit, offset, transactionTypeCodes, ct)))
+    .WithName("GetContractTransactionDocuments").WithSummary("Retrieves transaction documents for a contract").WithTags("Transaction");
+
+api.MapGet("/transaction-documents", async (string transactionSelectorType, string transactionSelectorValue, IProcessingCoreClient client, CancellationToken ct, int? limit = null, int? offset = null) =>
+        Results.Ok(await client.GetTransactionDocumentsAsync(transactionSelectorType, transactionSelectorValue, limit, offset, ct)))
+    .WithName("GetTransactionDocuments").WithSummary("Retrieves transaction documents by ID, ARN, RRN or SRN").WithTags("Transaction");
+
+api.MapGet("/transactions/{transactionId:long}/fees", async (long transactionId, IProcessingCoreClient client, CancellationToken ct) =>
+        Results.Ok(await client.GetTransactionFeesAsync(transactionId, ct)))
+    .WithName("GetTransactionFees").WithSummary("Retrieves fees generated for a transaction").WithTags("Transaction");
+
+api.MapPut("/contracts/{contractId:long}/transactions/{transactionId:long}/releasing-blocked-funds", async (long contractId, long transactionId, JsonElement body, IProcessingCoreClient client, CancellationToken ct) =>
+    {
+        await client.ReleaseBlockedFundsAsync(contractId, transactionId, body, ct);
+        return Results.NoContent();
+    })
+    .WithName("ReleaseBlockedFunds").WithSummary("Releases funds of the pending transaction").WithTags("Transaction");
+
+api.MapPost("/transactions/{transactionId:long}/reversals", async (long transactionId, JsonElement body, IProcessingCoreClient client, CancellationToken ct, string? idempotencyKey = null) =>
+        Results.Ok(await client.ReverseTransactionAsync(transactionId, body, idempotencyKey, ct)))
+    .WithName("ReverseTransaction").WithSummary("Reverses selected transaction made by the Issuer").WithTags("Transaction");
+
+// --- Usage limit ---
+
+api.MapPut("/contracts/{contractId:long}/usage-limits/{usageLimitCode}", async (long contractId, string usageLimitCode, JsonElement body, IProcessingCoreClient client, CancellationToken ct) =>
+    {
+        await client.SetUsageLimitAsync(contractId, usageLimitCode, body, ct);
+        return Results.NoContent();
+    })
+    .WithName("SetUsageLimit").WithSummary("Adds or updates a usage limit for a given contract").WithTags("Usage limit");
+
+api.MapGet("/contracts/{contractId:long}/usage-limits", async (long contractId, IProcessingCoreClient client, CancellationToken ct, string? usageLimitCodes = null) =>
+        Results.Ok(await client.GetUsageLimitsAsync(contractId, usageLimitCodes, ct)))
+    .WithName("GetUsageLimits").WithSummary("Retrieves a list of usage limits for a contract").WithTags("Usage limit");
+
+api.MapPut("/contracts/{contractId:long}/usage-limits/{usageLimitCode}/original-values", async (long contractId, string usageLimitCode, IProcessingCoreClient client, CancellationToken ct) =>
+    {
+        await client.RestoreUsageLimitOriginalValuesAsync(contractId, usageLimitCode, ct);
+        return Results.NoContent();
+    })
+    .WithName("RestoreUsageLimitOriginalValues").WithSummary("Restores original values of a usage limit for a given contract").WithTags("Usage limit");
+
+api.MapPut("/contracts/{contractId:long}/usage-limits/{usageLimitCode}/resetting-counters", async (long contractId, string usageLimitCode, JsonElement body, IProcessingCoreClient client, CancellationToken ct) =>
+    {
+        await client.ResetUsageLimitCountersAsync(contractId, usageLimitCode, body, ct);
+        return Results.NoContent();
+    })
+    .WithName("ResetUsageLimitCounters").WithSummary("Resets counters for a specified usage limit for a given contract").WithTags("Usage limit");
+
+api.MapPut("/contracts/{contractId:long}/usage-limits/{usageLimitCode}/status", async (long contractId, string usageLimitCode, JsonElement body, IProcessingCoreClient client, CancellationToken ct) =>
+    {
+        await client.ChangeUsageLimitStatusAsync(contractId, usageLimitCode, body, ct);
+        return Results.NoContent();
+    })
+    .WithName("ChangeUsageLimitStatus").WithSummary("Changes specified usage limit status for a given contract").WithTags("Usage limit");
+
+// --- Tariff ---
+
+api.MapPost("/contracts/{contractId:long}/service-limit-tariffs", async (long contractId, JsonElement body, IProcessingCoreClient client, CancellationToken ct, string? idempotencyKey = null) =>
+        Results.Ok(await client.SetServiceLimitTariffAsync(contractId, body, idempotencyKey, ct)))
+    .WithName("SetServiceLimitTariff").WithSummary("Sets up an individual service limit tariff for the contract").WithTags("Tariff");
+
+api.MapGet("/contracts/{contractId:long}/tariff-data", async (
+        long contractId, IProcessingCoreClient client, CancellationToken ct,
+        int? limit = null, int? offset = null, string? personalisationType = null, string? tariffCode = null,
+        string? tariffDomainCode = null, string? tariffRole = null, string? tariffTypeCode = null) =>
+        Results.Ok(await client.GetContractTariffDataAsync(contractId, limit, offset, personalisationType, tariffCode, tariffDomainCode, tariffRole, tariffTypeCode, ct)))
+    .WithName("GetContractTariffData").WithSummary("Retrieves information about tariff configuration for a contract").WithTags("Tariff");
+
+// --- Search ---
+
+api.MapPost("/clients/searches", async (JsonElement body, IProcessingCoreClient client, CancellationToken ct, string? idempotencyKey = null) =>
+        Results.Ok(await client.GetClientIdAsync(body, idempotencyKey, ct)))
+    .WithName("GetClientId").WithSummary("Returns clientId assigned to a given client identifier").WithTags("Search");
+
+api.MapPost("/accounts/searches", async (JsonElement body, IProcessingCoreClient client, CancellationToken ct, string? idempotencyKey = null) =>
+        Results.Ok(await client.GetAccountContractIdAsync(body, idempotencyKey, ct)))
+    .WithName("GetAccountContractId").WithSummary("Returns accountContractId assigned to a given account identifier").WithTags("Search");
+
+api.MapPost("/cards/searches", async (JsonElement body, IProcessingCoreClient client, CancellationToken ct, string? idempotencyKey = null) =>
+        Results.Ok(await client.GetCardContractIdAsync(body, idempotencyKey, ct)))
+    .WithName("GetCardContractId").WithSummary("Returns cardContractId assigned to a given card contract identifier").WithTags("Search");
+
+// --- Security ---
+
+api.MapGet("/public-keys", async (string dateTypeToSecure, IProcessingCoreClient client, CancellationToken ct) =>
+        Results.Ok(await client.GetPublicRsaKeyAsync(dateTypeToSecure, ct)))
+    .WithName("GetPublicRsaKey").WithSummary("Retrieves MP's public RSA key").WithTags("Security");
+
+app.Run();
+
+public partial class Program;

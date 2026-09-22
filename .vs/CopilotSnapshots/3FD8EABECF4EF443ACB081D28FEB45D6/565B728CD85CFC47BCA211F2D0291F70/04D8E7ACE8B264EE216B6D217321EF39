@@ -1,0 +1,26 @@
+﻿using System.Text.Json;
+using Unico.Mastercard.Api.Models;
+
+namespace Unico.Mastercard.Api.Client;
+
+/// <summary>Client for the Mastercard Processing Core operations.</summary>
+public interface IProcessingCoreClient
+{
+    /// <summary>GET /clients/{clientId}/account-contracts — list account contracts for a client.</summary>
+    Task<AccountContractsResponse> GetAccountContractsAsync(
+        string clientId, int offset, int limit, CancellationToken cancellationToken = default);
+
+    /// <summary>GET /contracts/{contractId}/balances — retrieve balances for an account or card contract.</summary>
+    Task<ContractBalancesResponse> GetContractBalancesAsync(
+        string contractId, IReadOnlyCollection<string> balanceCodes, CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// Generic pass-through call used for every other Processing Core operation that does not have a
+    /// dedicated strongly-typed method above. <paramref name="relativePathAndQuery"/> is the path (with
+    /// placeholders already substituted) relative to the API base URL, optionally including a query string.
+    /// Note: operations flagged <c>x-mastercard-api-encrypted</c> in the spec normally require JWE payload
+    /// encryption; this method does NOT perform that encryption/decryption and sends/receives plain JSON.
+    /// </summary>
+    Task<JsonElement?> SendAsync(
+        HttpMethod method, string relativePathAndQuery, JsonElement? body = null, CancellationToken cancellationToken = default);
+}

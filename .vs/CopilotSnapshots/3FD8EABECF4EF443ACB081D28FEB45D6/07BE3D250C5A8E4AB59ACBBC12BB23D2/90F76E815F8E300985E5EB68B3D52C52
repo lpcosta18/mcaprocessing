@@ -1,0 +1,96 @@
+﻿using Mastercard.Developer.OAuth1Signer.Core.Signers;
+using Mastercard.Developer.OAuth1Signer.Core.Utils;
+using Microsoft.AspNetCore.Diagnostics;
+using Microsoft.Extensions.Options;
+using Unico.Mastercard.Api.Client;
+using Unico.Mastercard.Api.Configuration;
+using Unico.Mastercard.Api.Models;
+
+var builder = WebApplication.CreateBuilder(args);
+
+builder.Services.AddOpenApi();
+
+builder.Services
+    .AddOptions<MastercardOptions>()
+    .Bind(builder.Configuration.GetSection(MastercardOptions.SectionName));
+
+var mastercardOptions = builder.Configuration
+    .GetSection(MastercardOptions.SectionName)
+    .Get<MastercardOptions>() ?? new MastercardOptions();
+
+if (mastercardOptions.UseMock)
+{
+    builder.Services.AddSingleton<IProcessingCoreClient, MockProcessingCoreClient>();
+}
+else
+{
+    // Signing key is loaded once and reused for every outgoing request.
+    builder.Services.AddSingleton(sp =>
+    {
+        var options = sp.GetRequiredService<IOptions<MastercardOptions>>().Value;
+        var signingKey = AuthenticationUtils.LoadSigningKey(
+            options.SigningKeyPath, options.SigningKeyAlias, options.SigningKeyPassword);
+        return new NetHttpClientSigner(options.ConsumerKey, signingKey);
+    });
+    builder.Services.AddTransient<OAuth1SigningHandler>();
+    builder.Services
+        .AddHttpClient<IProcessingCoreClient, ProcessingCoreClient>((sp, client) =>
+        {
+            var options = sp.GetRequiredService<IOptions<MastercardOptions>>().Value;
+            client.BaseAddress = new Uri(options.BaseUrl);
+        })
+        .AddHttpMessageHandler<OAuth1SigningHandler>();
+}
+
+var app = builder.Build();
+
+if (app.Environment.IsDevelopment())
+{
+    app.MapOpenApi();
+}
+
+app.UseExceptionHandler(errorApp => errorApp.Run(async context =>
+{
+    var exception = context.Features.Get<IExceptionHandlerFeature>()?.Error;
+
+    var (statusCode, title, detail) = exception switch
+    {
+        MastercardApiException mex => (
+            mex.StatusCode is >= 400 and < 600 ? mex.StatusCode : StatusCodes.Status502BadGateway,
+            "Mastercard Processing Core API error",
+            mex.ResponseBody),
+        _ => (StatusCodes.Status500InternalServerError, "Unexpected error", exception?.Message)
+    };
+
+    context.Response.StatusCode = statusCode;
+    await Results.Problem(title: title, detail: detail, statusCode: statusCode).ExecuteAsync(context);
+}));
+
+app.UseHttpsRedirection();
+
+var api = app.MapGroup("/api/processing-core").WithTags("Mastercard Processing Core");
+
+api.MapGet("/clients/{clientId}/account-contracts", async (
+        string clientId, int offset = 0, int limit = 10, IProcessingCoreClient client = null!, CancellationToken cancellationToken = default) =>
+    {
+        var result = await client.GetAccountContractsAsync(clientId, offset, limit, cancellationToken);
+        return Results.Ok(result);
+    })
+    .WithName("GetAccountContracts")
+    .WithSummary("Retrieve a list of account contracts for a client")
+    .Produces<AccountContractsResponse>();
+
+api.MapGet("/contracts/{contractId}/balances", async (
+        string contractId, string balanceCodes, IProcessingCoreClient client, CancellationToken cancellationToken) =>
+    {
+        var codes = balanceCodes.Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
+        var result = await client.GetContractBalancesAsync(contractId, codes, cancellationToken);
+        return Results.Ok(result);
+    })
+    .WithName("GetContractBalances")
+    .WithSummary("Retrieve balances for an account or card contract")
+    .Produces<ContractBalancesResponse>();
+
+app.Run();
+
+public partial class Program;

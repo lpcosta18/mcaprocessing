@@ -1,0 +1,282 @@
+using System.Text.Json;
+using Unico.Mastercard.Api.Models;
+
+namespace Unico.Mastercard.Api.Client;
+
+/// <summary>Client for the Mastercard Processing Core operations.</summary>
+public interface IProcessingCoreClient
+{
+    /// <summary>GET /clients/{clientId}/account-contracts — list account contracts for a client.</summary>
+    Task<AccountContractsResponse> GetAccountContractsAsync(
+        string clientId, int offset, int limit, CancellationToken cancellationToken = default);
+
+    /// <summary>GET /contracts/{contractId}/balances — retrieve balances for an account or card contract.</summary>
+    Task<ContractBalancesResponse> GetContractBalancesAsync(
+        string contractId, IReadOnlyCollection<string> balanceCodes, CancellationToken cancellationToken = default);
+
+    // Note: operations flagged `x-mastercard-api-encrypted` in the spec require JWE payload encryption.
+    // ProcessingCoreClient applies this automatically based on the Mastercard:EncryptedValueFieldName/DecryptionPaths
+    // configuration (see MastercardOptions); MockProcessingCoreClient always sends/receives plain JSON.
+
+    // --- Client ---
+
+    /// <summary>POST /clients — creates a client.</summary>
+    Task<JsonElement?> CreateClientAsync(ClientCreationRequest body, string? idempotencyKey, CancellationToken cancellationToken = default);
+
+    /// <summary>GET /clients/{client_id} — retrieves a client.</summary>
+    Task<JsonElement?> GetClientAsync(long clientId, CancellationToken cancellationToken = default);
+
+    /// <summary>PATCH /clients/{client_id} — updates a client.</summary>
+    Task UpdateClientAsync(long clientId, ClientModificationRequest body, string? ifMatch, string? idempotencyKey, CancellationToken cancellationToken = default);
+
+    /// <summary>GET /clients/{client_id}/card-contracts — retrieves a list of card contracts for a specified client.</summary>
+    Task<JsonElement?> GetCardContractsByClientAsync(
+        long clientId, string? creationDateFrom, string? statuses, int? limit, int? offset, CancellationToken cancellationToken = default);
+
+    /// <summary>PUT /clients/{client_id}/online-pin-attempts-counter — resets Online PIN Try Counter.</summary>
+    Task ClearOnlinePinAttemptsForClientAsync(long clientId, CancellationToken cancellationToken = default);
+
+    // --- Contract (shared by account/card contracts) ---
+
+    /// <summary>POST /contracts/{contract_id}/events — opens an event for a specified contract.</summary>
+    Task<JsonElement?> OpenEventAsync(long contractId, EventRequest body, string? idempotencyKey, CancellationToken cancellationToken = default);
+
+    /// <summary>GET /contracts/{contract_id}/financials — retrieves contract's financial information.</summary>
+    Task<JsonElement?> GetContractFinancialsAsync(long contractId, CancellationToken cancellationToken = default);
+
+    /// <summary>GET /contracts/{contract_id}/technical-accounts — retrieves technical accounts for a specified contract.</summary>
+    Task<JsonElement?> GetTechnicalAccountsAsync(long contractId, string? technicalAccountCode, CancellationToken cancellationToken = default);
+
+    /// <summary>GET /contracts/{contract_id}/tree-summaries — retrieves summary of the contracts for a specified contract.</summary>
+    Task<JsonElement?> GetContractTreeSummaryAsync(long contractId, int? limit, int? offset, CancellationToken cancellationToken = default);
+
+    /// <summary>PUT /contracts/{contract_id}/main-contract — relinks a subaccount or card contract to another account contract.</summary>
+    Task ChangeContractMainContractAsync(long contractId, AccountContractIdentifierWithClientIdentifierRequest body, CancellationToken cancellationToken = default);
+
+    /// <summary>PUT /contracts/{contract_id}/authentication-method — sets up a contract authentication method.</summary>
+    Task SetAuthenticationMethodAsync(long contractId, AuthenticationMethodRequest body, CancellationToken cancellationToken = default);
+
+    /// <summary>GET /contracts/{contract_id}/authentication-parameter-values — retrieves the value of a given authentication parameter.</summary>
+    Task<JsonElement?> GetAuthenticationParameterValueAsync(
+        long contractId, string authenticationParameterName, string authenticationTypeCode, CancellationToken cancellationToken = default);
+
+    // --- Account contract ---
+
+    /// <summary>POST /accounts — creates an account contract.</summary>
+    Task<JsonElement?> CreateAccountContractAsync(AccountContractCreationRequest body, string? idempotencyKey, CancellationToken cancellationToken = default);
+
+    /// <summary>GET /accounts/{account_contract_id} — retrieves an account contract.</summary>
+    Task<JsonElement?> GetAccountContractAsync(long accountContractId, CancellationToken cancellationToken = default);
+
+    /// <summary>PATCH /accounts/{account_contract_id} — updates an account contract.</summary>
+    Task UpdateAccountContractAsync(
+        long accountContractId, AccountContractModificationRequest body, string? ifMatch, string? idempotencyKey, CancellationToken cancellationToken = default);
+
+    /// <summary>PUT /accounts/{account_contract_id}/status — changes an account contract status.</summary>
+    Task ChangeAccountContractStatusAsync(long accountContractId, AccountContractStatusWithReasonRequest body, CancellationToken cancellationToken = default);
+
+    /// <summary>GET /accounts/{account_contract_id}/statuses — retrieves account contract status.</summary>
+    Task<JsonElement?> GetAccountContractStatusAsync(long accountContractId, CancellationToken cancellationToken = default);
+
+    /// <summary>PUT /accounts/{account_contract_id}/client-identifier — relinks an account contract to another client.</summary>
+    Task ChangeAccountContractClientAsync(long accountContractId, ClientIdentifierWithRelinkTypeRequest body, CancellationToken cancellationToken = default);
+
+    /// <summary>GET /accounts/{account_contract_id}/sub-accounts — retrieves a list of subaccount contracts.</summary>
+    Task<JsonElement?> GetSubAccountContractsAsync(long accountContractId, int? limit, int? offset, CancellationToken cancellationToken = default);
+
+    /// <summary>GET /accounts/{account_contract_id}/card-contracts — retrieves a list of card contracts for a specified account contract.</summary>
+    Task<JsonElement?> GetCardContractsByAccountAsync(
+        long accountContractId, string? creationDateFrom, string? statuses, int? limit, int? offset, CancellationToken cancellationToken = default);
+
+    // --- Card contract ---
+
+    /// <summary>POST /cards — creates a card contract.</summary>
+    Task<JsonElement?> CreateCardContractAsync(CardContractCreationRequest body, string? idempotencyKey, CancellationToken cancellationToken = default);
+
+    /// <summary>GET /cards/{card_contract_id} — retrieves a card contract.</summary>
+    Task<JsonElement?> GetCardContractAsync(
+        long cardContractId, string? fieldsSelection, string? customerPublicRsaKey, CancellationToken cancellationToken = default);
+
+    /// <summary>PATCH /cards/{card_contract_id} — updates a card contract.</summary>
+    Task UpdateCardContractAsync(
+        long cardContractId, CardContractModificationRequest body, string? ifMatch, string? idempotencyKey, CancellationToken cancellationToken = default);
+
+    /// <summary>POST /cards/details-verifications — verifies card details.</summary>
+    Task<JsonElement?> VerifyCardDetailsAsync(CardContractDetailsVerificationRequest body, string? idempotencyKey, CancellationToken cancellationToken = default);
+
+    /// <summary>PUT /cards/{card_contract_id}/status — sets new status for the card contract.</summary>
+    Task ChangeCardContractStatusAsync(long cardContractId, CardContractStatusWithReasonRequest body, CancellationToken cancellationToken = default);
+
+    /// <summary>GET /cards/{card_contract_id}/statuses — retrieves card contract status.</summary>
+    Task<JsonElement?> GetCardContractStatusAsync(long cardContractId, CancellationToken cancellationToken = default);
+
+    /// <summary>PUT /cards/{card_contract_id}/client-identifier — relinks a card contract to another client.</summary>
+    Task ChangeCardContractClientAsync(long cardContractId, ClientIdentifierWithRelinkTypeRequest body, CancellationToken cancellationToken = default);
+
+    /// <summary>PUT /cards/{card_contract_id}/main-contract — relinks a card contract to another account contract.</summary>
+    Task ChangeCardContractMainContractAsync(long cardContractId, AccountContractIdentifierRequest body, CancellationToken cancellationToken = default);
+
+    /// <summary>PUT /cards/{card_contract_id}/online-pin-attempts-counter — resets Online PIN Try Counter.</summary>
+    Task ClearOnlinePinAttemptsAsync(long cardContractId, CancellationToken cancellationToken = default);
+
+    /// <summary>PUT /cards/{card_contract_id}/active — activates a card plastic.</summary>
+    Task ActivateCardAsync(long cardContractId, CancellationToken cancellationToken = default);
+
+    /// <summary>PUT /cards/{card_contract_id}/pin — sets up new PIN for a card plastic.</summary>
+    Task SetPinAsync(long cardContractId, PinCreationRequest body, int keyIndex, CancellationToken cancellationToken = default);
+
+    /// <summary>POST /cards/{card_contract_id}/pins/searches — retrieves a PIN for a card plastic.</summary>
+    Task<JsonElement?> GetPinAsync(
+        long cardContractId, string customerPublicRsaKey, string? idempotencyKey, CancellationToken cancellationToken = default);
+
+    /// <summary>POST /cards/{card_contract_id}/pins/verifications — verifies a PIN.</summary>
+    Task<JsonElement?> VerifyPinAsync(
+        long cardContractId, PinVerificationRequest body, int keyIndex, string? idempotencyKey, CancellationToken cancellationToken = default);
+
+    /// <summary>POST /cards/{card_contract_id}/card-verification-codes/searches — retrieves a CVC2 for a card plastic.</summary>
+    Task<JsonElement?> GetCvcAsync(
+        long cardContractId, string? customerPublicRsaKey, string? idempotencyKey, CancellationToken cancellationToken = default);
+
+    /// <summary>POST /cards/{card_contract_id}/card-verification-codes/verifications — verifies a CVC2 of specific card plastic.</summary>
+    Task<JsonElement?> VerifyCvcAsync(long cardContractId, CvcVerificationRequest body, string? idempotencyKey, CancellationToken cancellationToken = default);
+
+    /// <summary>POST /cards/{card_contract_id}/plastics — reissues a card.</summary>
+    Task<JsonElement?> ReissueCardAsync(long cardContractId, CardContractReissueRequest body, string? idempotencyKey, CancellationToken cancellationToken = default);
+
+    /// <summary>GET /cards/{card_contract_id}/plastics — retrieves information about all card plastics for a specified card contract.</summary>
+    Task<JsonElement?> GetCardPlasticsAsync(long cardContractId, CancellationToken cancellationToken = default);
+
+    // --- Address ---
+
+    /// <summary>POST /clients/{client_id}/addresses — creates an address for a client.</summary>
+    Task<JsonElement?> AddClientAddressAsync(long clientId, AddressCreationRequest body, string? idempotencyKey, CancellationToken cancellationToken = default);
+
+    /// <summary>GET /clients/{client_id}/addresses — retrieves a list of addresses for the client.</summary>
+    Task<JsonElement?> GetClientAddressesAsync(long clientId, CancellationToken cancellationToken = default);
+
+    /// <summary>PUT /clients/{client_id}/addresses/{address_type} — updates an address of a selected type for the client.</summary>
+    Task UpdateClientAddressAsync(long clientId, string addressType, AddressModificationRequest body, CancellationToken cancellationToken = default);
+
+    /// <summary>POST /contracts/{contract_id}/addresses — creates an address for the contract.</summary>
+    Task<JsonElement?> AddContractAddressAsync(long contractId, AddressCreationRequest body, string? idempotencyKey, CancellationToken cancellationToken = default);
+
+    /// <summary>GET /contracts/{contract_id}/addresses — retrieves a list of addresses for the contract.</summary>
+    Task<JsonElement?> GetContractAddressesAsync(long contractId, CancellationToken cancellationToken = default);
+
+    /// <summary>PUT /contracts/{contract_id}/addresses/{address_type} — updates an address of a selected type for the contract.</summary>
+    Task UpdateContractAddressAsync(long contractId, string addressType, AddressModificationRequest body, CancellationToken cancellationToken = default);
+
+    // --- Classifier ---
+
+    /// <summary>PUT /clients/{client_id}/classifiers/{classifier_code} — sets up a client classifier.</summary>
+    Task SetClientClassifierAsync(long clientId, string classifierCode, ClassifierCreationRequest body, CancellationToken cancellationToken = default);
+
+    /// <summary>GET /clients/{client_id}/classifiers — retrieves a client classifier.</summary>
+    Task<JsonElement?> GetClientClassifiersAsync(long clientId, string? classifierCodes, CancellationToken cancellationToken = default);
+
+    /// <summary>PUT /contracts/{contract_id}/classifiers/{classifier_code} — sets up a contract's classifier.</summary>
+    Task SetContractClassifierAsync(long contractId, string classifierCode, ClassifierCreationRequest body, CancellationToken cancellationToken = default);
+
+    /// <summary>GET /contracts/{contract_id}/classifiers — retrieves contract's classifier.</summary>
+    Task<JsonElement?> GetContractClassifiersAsync(long contractId, string? classifierCodes, CancellationToken cancellationToken = default);
+
+    // --- Custom data ---
+
+    /// <summary>POST /clients/{client_id}/custom-data — sets up custom data for a client.</summary>
+    Task<JsonElement?> SetClientCustomDataAsync(long clientId, CustomDataTagsRequest body, string? idempotencyKey, CancellationToken cancellationToken = default);
+
+    /// <summary>GET /clients/{client_id}/custom-data/{tag_name} — retrieves selected custom data for a client.</summary>
+    Task<JsonElement?> GetClientCustomDataAsync(long clientId, string tagName, CancellationToken cancellationToken = default);
+
+    /// <summary>POST /contracts/{contract_id}/custom-data — sets up custom data for a specified contract.</summary>
+    Task<JsonElement?> SetContractCustomDataAsync(long contractId, CustomDataTagsRequest body, string? idempotencyKey, CancellationToken cancellationToken = default);
+
+    /// <summary>GET /contracts/{contract_id}/custom-data/{tag_name} — retrieves selected custom data for a specified contract.</summary>
+    Task<JsonElement?> GetContractCustomDataAsync(long contractId, string tagName, CancellationToken cancellationToken = default);
+
+    // --- Parameter ---
+
+    /// <summary>PUT /contracts/{contract_id}/parameters/{parameter_code} — sets up or changes a contract's parameter value.</summary>
+    Task SetContractParameterAsync(long contractId, string parameterCode, ParameterModificationRequest body, CancellationToken cancellationToken = default);
+
+    /// <summary>GET /contracts/{contract_id}/parameters — retrieves information about contract parameter(s).</summary>
+    Task<JsonElement?> GetContractParametersAsync(long contractId, string? parameterCodes, CancellationToken cancellationToken = default);
+
+    // --- Transaction ---
+
+    /// <summary>POST /contracts/{contract_id}/debits — posts debit transaction to a contract.</summary>
+    Task<JsonElement?> DebitContractAsync(long contractId, TransactionContractDebitRequest body, string? idempotencyKey, CancellationToken cancellationToken = default);
+
+    /// <summary>POST /contracts/{contract_id}/credits — posts credit transaction to a contract.</summary>
+    Task<JsonElement?> CreditContractAsync(long contractId, TransactionContractCreditRequest body, string? idempotencyKey, CancellationToken cancellationToken = default);
+
+    /// <summary>POST /contracts/{contract_id}/charge-fees — charges specified contract with a fee configured in the MP's CMS.</summary>
+    Task<JsonElement?> ChargeFeeAsync(long contractId, ChargeFeeRequest body, string? idempotencyKey, CancellationToken cancellationToken = default);
+
+    /// <summary>GET /contracts/{contract_id}/transactions — retrieves transactions for a specified contract.</summary>
+    Task<JsonElement?> GetTransactionsAsync(
+        long contractId, string? transactionDateFrom, string? transactionDateTo, string? transactionAuthorizationFilterMode,
+        bool? transactionAuthorized, int? limit, int? offset, string? transactionTypeCodes, CancellationToken cancellationToken = default);
+
+    /// <summary>GET /contracts/{contract_id}/transaction-documents — retrieves transaction documents for a contract.</summary>
+    Task<JsonElement?> GetContractTransactionDocumentsAsync(
+        long contractId, string? transactionDateFrom, string? transactionDateTo, string? transactionAuthorizationFilterMode,
+        bool? transactionCollectAuthorizations, bool? contractHierarchy, string? direction, int? limit, int? offset,
+        string? transactionTypeCodes, CancellationToken cancellationToken = default);
+
+    /// <summary>GET /transaction-documents — retrieves transaction documents by ID, ARN, RRN or SRN.</summary>
+    Task<JsonElement?> GetTransactionDocumentsAsync(
+        string transactionSelectorType, string transactionSelectorValue, int? limit, int? offset, CancellationToken cancellationToken = default);
+
+    /// <summary>GET /transactions/{transaction_id}/fees — retrieves fees generated for a transaction.</summary>
+    Task<JsonElement?> GetTransactionFeesAsync(long transactionId, CancellationToken cancellationToken = default);
+
+    /// <summary>PUT /contracts/{contract_id}/transactions/{transaction_id}/releasing-blocked-funds — releases funds of the pending transaction.</summary>
+    Task ReleaseBlockedFundsAsync(long contractId, long transactionId, BlockedFundsReleaseRequest body, CancellationToken cancellationToken = default);
+
+    /// <summary>POST /transactions/{transaction_id}/reversals — reverses selected transaction made by the Issuer.</summary>
+    Task<JsonElement?> ReverseTransactionAsync(long transactionId, ReverseTransactionReasonRequest body, string? idempotencyKey, CancellationToken cancellationToken = default);
+
+    // --- Usage limit ---
+
+    /// <summary>PUT /contracts/{contract_id}/usage-limits/{usage_limit_code} — adds or updates a usage limit for a given contract.</summary>
+    Task SetUsageLimitAsync(long contractId, string usageLimitCode, UsageLimitModificationRequest body, CancellationToken cancellationToken = default);
+
+    /// <summary>GET /contracts/{contract_id}/usage-limits — retrieves a list of usage limits for a contract.</summary>
+    Task<JsonElement?> GetUsageLimitsAsync(long contractId, string? usageLimitCodes, CancellationToken cancellationToken = default);
+
+    /// <summary>PUT /contracts/{contract_id}/usage-limits/{usage_limit_code}/original-values — restores original values of a usage limit.</summary>
+    Task RestoreUsageLimitOriginalValuesAsync(long contractId, string usageLimitCode, CancellationToken cancellationToken = default);
+
+    /// <summary>PUT /contracts/{contract_id}/usage-limits/{usage_limit_code}/resetting-counters — resets counters for a specified usage limit.</summary>
+    Task ResetUsageLimitCountersAsync(long contractId, string usageLimitCode, UsageLimitResettingRequest body, CancellationToken cancellationToken = default);
+
+    /// <summary>PUT /contracts/{contract_id}/usage-limits/{usage_limit_code}/status — changes specified usage limit status.</summary>
+    Task ChangeUsageLimitStatusAsync(long contractId, string usageLimitCode, UsageLimitStatusRequest body, CancellationToken cancellationToken = default);
+
+    // --- Tariff ---
+
+    /// <summary>POST /contracts/{contract_id}/service-limit-tariffs — sets up an individual service limit tariff for the contract.</summary>
+    Task<JsonElement?> SetServiceLimitTariffAsync(long contractId, ServiceLimitTariffRequest body, string? idempotencyKey, CancellationToken cancellationToken = default);
+
+    /// <summary>GET /contracts/{contract_id}/tariff-data — retrieves information about tariff configuration for a contract.</summary>
+    Task<JsonElement?> GetContractTariffDataAsync(
+        long contractId, int? limit, int? offset, string? personalisationType, string? tariffCode,
+        string? tariffDomainCode, string? tariffRole, string? tariffTypeCode, CancellationToken cancellationToken = default);
+
+    // --- Search ---
+
+    /// <summary>POST /clients/searches — returns clientId assigned to a given client identifier.</summary>
+    Task<JsonElement?> GetClientIdAsync(ClientIdentifierSearchRequest body, string? idempotencyKey, CancellationToken cancellationToken = default);
+
+    /// <summary>POST /accounts/searches — returns accountContractId assigned to a given account identifier.</summary>
+    Task<JsonElement?> GetAccountContractIdAsync(AccountContractIdentifierSearchRequest body, string? idempotencyKey, CancellationToken cancellationToken = default);
+
+    /// <summary>POST /cards/searches — returns cardContractId assigned to a given card contract identifier.</summary>
+    Task<JsonElement?> GetCardContractIdAsync(CardContractIdentifierSearchRequest body, string? idempotencyKey, CancellationToken cancellationToken = default);
+
+    // --- Security ---
+
+    /// <summary>GET /public-keys — retrieves MP's public RSA key.</summary>
+    Task<JsonElement?> GetPublicRsaKeyAsync(string dateTypeToSecure, CancellationToken cancellationToken = default);
+}

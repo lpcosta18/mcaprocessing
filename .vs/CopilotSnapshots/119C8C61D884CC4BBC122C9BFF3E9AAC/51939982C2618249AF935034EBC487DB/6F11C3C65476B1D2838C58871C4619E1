@@ -1,0 +1,454 @@
+﻿using Mastercard.Developer.ClientEncryption.Core.Encryption;
+using Mastercard.Developer.ClientEncryption.Core.Encryption.JWE;
+using System.Net.Http.Json;
+using System.Text.Json;
+using Unico.Mastercard.Api.Models;
+using System.Linq;
+
+namespace Unico.Mastercard.Api.Client;
+
+/// <summary>Calls the real Mastercard Processing Core API over a pre-configured, OAuth 1.0a-signed HttpClient.</summary>
+public sealed class ProcessingCoreClient : IProcessingCoreClient
+{
+    private static readonly JsonSerializerOptions SerializerOptions = new(JsonSerializerDefaults.Web);
+
+    private readonly HttpClient _httpClient;
+    private readonly JweConfig? _jweConfig;
+
+    public ProcessingCoreClient(HttpClient httpClient, JweConfig? jweConfig = null)
+    {
+        _httpClient = httpClient;
+        _jweConfig = jweConfig;
+    }
+
+    public async Task<AccountContractsResponse> GetAccountContractsAsync(
+        string clientId, int offset, int limit, CancellationToken cancellationToken = default)
+    {
+        var uri = $"clients/{Uri.EscapeDataString(clientId)}/account-contracts?offset={offset}&limit={limit}";
+        return await SendAsync<AccountContractsResponse>(uri, cancellationToken);
+    }
+
+    public async Task<ContractBalancesResponse> GetContractBalancesAsync(
+        string contractId, IReadOnlyCollection<string> balanceCodes, CancellationToken cancellationToken = default)
+    {
+        var codes = string.Join(',', balanceCodes);
+        var uri = $"contracts/{Uri.EscapeDataString(contractId)}/balances?balance_codes={Uri.EscapeDataString(codes)}";
+        return await SendAsync<ContractBalancesResponse>(uri, cancellationToken);
+    }
+
+    public async Task<JsonElement?> SendAsync(
+        HttpMethod method, string relativePathAndQuery, JsonElement? body = null, CancellationToken cancellationToken = default)
+    {
+        using var request = new HttpRequestMessage(method, relativePathAndQuery);
+        if (body is not null)
+        {
+            request.Content = new StringContent(EncryptBody(body.Value), System.Text.Encoding.UTF8, "application/json");
+        }
+
+        using var response = await _httpClient.SendAsync(request, cancellationToken);
+        if (!response.IsSuccessStatusCode)
+        {
+            var errorBody = await response.Content.ReadAsStringAsync(cancellationToken);
+            throw new MastercardApiException((int)response.StatusCode, errorBody);
+        }
+
+        if (response.StatusCode == System.Net.HttpStatusCode.NoContent)
+        {
+            return null;
+        }
+
+        var text = DecryptBody(await response.Content.ReadAsStringAsync(cancellationToken));
+        return string.IsNullOrWhiteSpace(text) ? null : JsonDocument.Parse(text).RootElement.Clone();
+    }
+
+    private async Task<JsonElement?> SendAsync(
+        HttpMethod method, string path, JsonElement? body, IEnumerable<(string Key, string? Value)>? query,
+        IEnumerable<(string Name, string? Value)>? headers, CancellationToken cancellationToken)
+    {
+        var uri = BuildUri(path, query);
+        using var request = new HttpRequestMessage(method, uri);
+        if (body is not null)
+        {
+            request.Content = new StringContent(EncryptBody(body.Value), System.Text.Encoding.UTF8, "application/json");
+        }
+
+        if (headers is not null)
+        {
+            foreach (var (name, value) in headers)
+            {
+                if (!string.IsNullOrEmpty(value))
+                {
+                    request.Headers.TryAddWithoutValidation(name, value);
+                }
+            }
+        }
+
+        using var response = await _httpClient.SendAsync(request, cancellationToken);
+        if (!response.IsSuccessStatusCode)
+        {
+            var errorBody = await response.Content.ReadAsStringAsync(cancellationToken);
+            throw new MastercardApiException((int)response.StatusCode, errorBody);
+        }
+
+        if (response.StatusCode == System.Net.HttpStatusCode.NoContent)
+        {
+            return null;
+        }
+
+        var text = DecryptBody(await response.Content.ReadAsStringAsync(cancellationToken));
+        return string.IsNullOrWhiteSpace(text) ? null : JsonDocument.Parse(text).RootElement.Clone();
+    }
+
+    // Encrypts fields configured in the JWE config (per operations flagged 'x-mastercard-api-encrypted' in the
+    // spec, e.g. PIN blocks). No-op when no JWE config is configured or the body has no matching paths.
+    private string EncryptBody(JsonElement body)
+    {
+        var json = body.GetRawText();
+        return _jweConfig is null ? json : JweEncryption.EncryptPayload(json, _jweConfig);
+    }
+
+    // Decrypts fields configured in the JWE config. No-op when no JWE config is configured or the response has
+    // no matching encrypted paths.
+    private string DecryptBody(string json)
+    {
+        return _jweConfig is null || string.IsNullOrWhiteSpace(json) ? json : JweEncryption.DecryptPayload(json, _jweConfig);
+    }
+
+    private static string BuildUri(string path, IEnumerable<(string Key, string? Value)>? query)
+    {
+        if (query is null)
+        {
+            return path;
+        }
+
+        var parts = query
+            .Where(q => q.Value is not null)
+            .Select(q => $"{Uri.EscapeDataString(q.Key)}={Uri.EscapeDataString(q.Value!)}")
+            .ToList();
+
+        return parts.Count == 0 ? path : $"{path}?{string.Join('&', parts)}";
+    }
+
+    private static IEnumerable<(string Name, string? Value)> IdempotencyHeader(string? idempotencyKey) =>
+        [("Idempotency-Key", idempotencyKey)];
+
+    private static IEnumerable<(string Name, string? Value)> IfMatchAndIdempotencyHeaders(string? ifMatch, string? idempotencyKey) =>
+        [("If-Match", ifMatch), ("Idempotency-Key", idempotencyKey)];
+
+    private static JsonElement ToElement<T>(T value) => JsonSerializer.SerializeToElement(value, SerializerOptions);
+
+    // --- Client ---
+
+    public Task<JsonElement?> CreateClientAsync(ClientCreationRequest body, string? idempotencyKey, CancellationToken cancellationToken = default) =>
+        SendAsync(HttpMethod.Post, "clients", ToElement(body), null, IdempotencyHeader(idempotencyKey), cancellationToken);
+
+    public Task<JsonElement?> GetClientAsync(long clientId, CancellationToken cancellationToken = default) =>
+        SendAsync(HttpMethod.Get, $"clients/{clientId}", null, null, null, cancellationToken);
+
+    public async Task UpdateClientAsync(long clientId, ClientModificationRequest body, string? ifMatch, string? idempotencyKey, CancellationToken cancellationToken = default) =>
+        await SendAsync(HttpMethod.Patch, $"clients/{clientId}", ToElement(body), null, IfMatchAndIdempotencyHeaders(ifMatch, idempotencyKey), cancellationToken);
+
+    public Task<JsonElement?> GetCardContractsByClientAsync(
+        long clientId, string? creationDateFrom, string? statuses, int? limit, int? offset, CancellationToken cancellationToken = default) =>
+        SendAsync(HttpMethod.Get, $"clients/{clientId}/card-contracts", null,
+            [("creation_date_from", creationDateFrom), ("statuses", statuses), ("limit", limit?.ToString()), ("offset", offset?.ToString())],
+            null, cancellationToken);
+
+    public async Task ClearOnlinePinAttemptsForClientAsync(long clientId, CancellationToken cancellationToken = default) =>
+        await SendAsync(HttpMethod.Put, $"clients/{clientId}/online-pin-attempts-counter", null, null, null, cancellationToken);
+
+    // --- Contract ---
+
+    public Task<JsonElement?> OpenEventAsync(long contractId, EventRequest body, string? idempotencyKey, CancellationToken cancellationToken = default) =>
+        SendAsync(HttpMethod.Post, $"contracts/{contractId}/events", ToElement(body), null, IdempotencyHeader(idempotencyKey), cancellationToken);
+
+    public Task<JsonElement?> GetContractFinancialsAsync(long contractId, CancellationToken cancellationToken = default) =>
+        SendAsync(HttpMethod.Get, $"contracts/{contractId}/financials", null, null, null, cancellationToken);
+
+    public Task<JsonElement?> GetTechnicalAccountsAsync(long contractId, string? technicalAccountCode, CancellationToken cancellationToken = default) =>
+        SendAsync(HttpMethod.Get, $"contracts/{contractId}/technical-accounts", null, [("technical_account_code", technicalAccountCode)], null, cancellationToken);
+
+    public Task<JsonElement?> GetContractTreeSummaryAsync(long contractId, int? limit, int? offset, CancellationToken cancellationToken = default) =>
+        SendAsync(HttpMethod.Get, $"contracts/{contractId}/tree-summaries", null, [("limit", limit?.ToString()), ("offset", offset?.ToString())], null, cancellationToken);
+
+    public async Task ChangeContractMainContractAsync(long contractId, AccountContractIdentifierWithClientIdentifierRequest body, CancellationToken cancellationToken = default) =>
+        await SendAsync(HttpMethod.Put, $"contracts/{contractId}/main-contract", ToElement(body), null, null, cancellationToken);
+
+    public async Task SetAuthenticationMethodAsync(long contractId, AuthenticationMethodRequest body, CancellationToken cancellationToken = default) =>
+        await SendAsync(HttpMethod.Put, $"contracts/{contractId}/authentication-method", ToElement(body), null, null, cancellationToken);
+
+    public Task<JsonElement?> GetAuthenticationParameterValueAsync(
+        long contractId, string authenticationParameterName, string authenticationTypeCode, CancellationToken cancellationToken = default) =>
+        SendAsync(HttpMethod.Get, $"contracts/{contractId}/authentication-parameter-values", null,
+            [("authentication_parameter_name", authenticationParameterName), ("authentication_type_code", authenticationTypeCode)], null, cancellationToken);
+
+    // --- Account contract ---
+
+    public Task<JsonElement?> CreateAccountContractAsync(AccountContractCreationRequest body, string? idempotencyKey, CancellationToken cancellationToken = default) =>
+        SendAsync(HttpMethod.Post, "accounts", ToElement(body), null, IdempotencyHeader(idempotencyKey), cancellationToken);
+
+    public Task<JsonElement?> GetAccountContractAsync(long accountContractId, CancellationToken cancellationToken = default) =>
+        SendAsync(HttpMethod.Get, $"accounts/{accountContractId}", null, null, null, cancellationToken);
+
+    public async Task UpdateAccountContractAsync(
+        long accountContractId, AccountContractModificationRequest body, string? ifMatch, string? idempotencyKey, CancellationToken cancellationToken = default) =>
+        await SendAsync(HttpMethod.Patch, $"accounts/{accountContractId}", ToElement(body), null, IfMatchAndIdempotencyHeaders(ifMatch, idempotencyKey), cancellationToken);
+
+    public async Task ChangeAccountContractStatusAsync(long accountContractId, AccountContractStatusWithReasonRequest body, CancellationToken cancellationToken = default) =>
+        await SendAsync(HttpMethod.Put, $"accounts/{accountContractId}/status", ToElement(body), null, null, cancellationToken);
+
+    public Task<JsonElement?> GetAccountContractStatusAsync(long accountContractId, CancellationToken cancellationToken = default) =>
+        SendAsync(HttpMethod.Get, $"accounts/{accountContractId}/statuses", null, null, null, cancellationToken);
+
+    public async Task ChangeAccountContractClientAsync(long accountContractId, ClientIdentifierWithRelinkTypeRequest body, CancellationToken cancellationToken = default) =>
+        await SendAsync(HttpMethod.Put, $"accounts/{accountContractId}/client-identifier", ToElement(body), null, null, cancellationToken);
+
+    public Task<JsonElement?> GetSubAccountContractsAsync(long accountContractId, int? limit, int? offset, CancellationToken cancellationToken = default) =>
+        SendAsync(HttpMethod.Get, $"accounts/{accountContractId}/sub-accounts", null, [("limit", limit?.ToString()), ("offset", offset?.ToString())], null, cancellationToken);
+
+    public Task<JsonElement?> GetCardContractsByAccountAsync(
+        long accountContractId, string? creationDateFrom, string? statuses, int? limit, int? offset, CancellationToken cancellationToken = default) =>
+        SendAsync(HttpMethod.Get, $"accounts/{accountContractId}/card-contracts", null,
+            [("creation_date_from", creationDateFrom), ("statuses", statuses), ("limit", limit?.ToString()), ("offset", offset?.ToString())],
+            null, cancellationToken);
+
+    // --- Card contract ---
+
+    public Task<JsonElement?> CreateCardContractAsync(CardContractCreationRequest body, string? idempotencyKey, CancellationToken cancellationToken = default) =>
+        SendAsync(HttpMethod.Post, "cards", ToElement(body), null, IdempotencyHeader(idempotencyKey), cancellationToken);
+
+    public Task<JsonElement?> GetCardContractAsync(
+        long cardContractId, string? fieldsSelection, string? customerPublicRsaKey, CancellationToken cancellationToken = default) =>
+        SendAsync(HttpMethod.Get, $"cards/{cardContractId}", null, [("fields_selection", fieldsSelection)],
+            [("Customer-Public-Rsa-Key", customerPublicRsaKey)], cancellationToken);
+
+    public async Task UpdateCardContractAsync(
+        long cardContractId, CardContractModificationRequest body, string? ifMatch, string? idempotencyKey, CancellationToken cancellationToken = default) =>
+        await SendAsync(HttpMethod.Patch, $"cards/{cardContractId}", ToElement(body), null, IfMatchAndIdempotencyHeaders(ifMatch, idempotencyKey), cancellationToken);
+
+    public Task<JsonElement?> VerifyCardDetailsAsync(CardContractDetailsVerificationRequest body, string? idempotencyKey, CancellationToken cancellationToken = default) =>
+        SendAsync(HttpMethod.Post, "cards/details-verifications", ToElement(body), null, IdempotencyHeader(idempotencyKey), cancellationToken);
+
+    public async Task ChangeCardContractStatusAsync(long cardContractId, CardContractStatusWithReasonRequest body, CancellationToken cancellationToken = default) =>
+        await SendAsync(HttpMethod.Put, $"cards/{cardContractId}/status", ToElement(body), null, null, cancellationToken);
+
+    public Task<JsonElement?> GetCardContractStatusAsync(long cardContractId, CancellationToken cancellationToken = default) =>
+        SendAsync(HttpMethod.Get, $"cards/{cardContractId}/statuses", null, null, null, cancellationToken);
+
+    public async Task ChangeCardContractClientAsync(long cardContractId, ClientIdentifierWithRelinkTypeRequest body, CancellationToken cancellationToken = default) =>
+        await SendAsync(HttpMethod.Put, $"cards/{cardContractId}/client-identifier", ToElement(body), null, null, cancellationToken);
+
+    public async Task ChangeCardContractMainContractAsync(long cardContractId, AccountContractIdentifierRequest body, CancellationToken cancellationToken = default) =>
+        await SendAsync(HttpMethod.Put, $"cards/{cardContractId}/main-contract", ToElement(body), null, null, cancellationToken);
+
+    public async Task ClearOnlinePinAttemptsAsync(long cardContractId, CancellationToken cancellationToken = default) =>
+        await SendAsync(HttpMethod.Put, $"cards/{cardContractId}/online-pin-attempts-counter", null, null, null, cancellationToken);
+
+    public async Task ActivateCardAsync(long cardContractId, CancellationToken cancellationToken = default) =>
+        await SendAsync(HttpMethod.Put, $"cards/{cardContractId}/active", null, null, null, cancellationToken);
+
+    public async Task SetPinAsync(long cardContractId, PinCreationRequest body, int keyIndex, CancellationToken cancellationToken = default) =>
+        await SendAsync(HttpMethod.Put, $"cards/{cardContractId}/pin", ToElement(body), [("key_index", keyIndex.ToString())], null, cancellationToken);
+
+    public Task<JsonElement?> GetPinAsync(
+        long cardContractId, string customerPublicRsaKey, string? idempotencyKey, CancellationToken cancellationToken = default) =>
+        SendAsync(HttpMethod.Post, $"cards/{cardContractId}/pins/searches", null, null,
+            [("Customer-Public-Rsa-Key", customerPublicRsaKey), ("Idempotency-Key", idempotencyKey)], cancellationToken);
+
+    public Task<JsonElement?> VerifyPinAsync(
+        long cardContractId, PinVerificationRequest body, int keyIndex, string? idempotencyKey, CancellationToken cancellationToken = default) =>
+        SendAsync(HttpMethod.Post, $"cards/{cardContractId}/pins/verifications", ToElement(body), [("key_index", keyIndex.ToString())],
+            IdempotencyHeader(idempotencyKey), cancellationToken);
+
+    public Task<JsonElement?> GetCvcAsync(
+        long cardContractId, string? customerPublicRsaKey, string? idempotencyKey, CancellationToken cancellationToken = default) =>
+        SendAsync(HttpMethod.Post, $"cards/{cardContractId}/card-verification-codes/searches", null, null,
+            [("Customer-Public-Rsa-Key", customerPublicRsaKey), ("Idempotency-Key", idempotencyKey)], cancellationToken);
+
+    public Task<JsonElement?> VerifyCvcAsync(long cardContractId, CvcVerificationRequest body, string? idempotencyKey, CancellationToken cancellationToken = default) =>
+        SendAsync(HttpMethod.Post, $"cards/{cardContractId}/card-verification-codes/verifications", ToElement(body), null, IdempotencyHeader(idempotencyKey), cancellationToken);
+
+    public Task<JsonElement?> ReissueCardAsync(long cardContractId, CardContractReissueRequest body, string? idempotencyKey, CancellationToken cancellationToken = default) =>
+        SendAsync(HttpMethod.Post, $"cards/{cardContractId}/plastics", ToElement(body), null, IdempotencyHeader(idempotencyKey), cancellationToken);
+
+    public Task<JsonElement?> GetCardPlasticsAsync(long cardContractId, CancellationToken cancellationToken = default) =>
+        SendAsync(HttpMethod.Get, $"cards/{cardContractId}/plastics", null, null, null, cancellationToken);
+
+    // --- Address ---
+
+    public Task<JsonElement?> AddClientAddressAsync(long clientId, AddressCreationRequest body, string? idempotencyKey, CancellationToken cancellationToken = default) =>
+        SendAsync(HttpMethod.Post, $"clients/{clientId}/addresses", ToElement(body), null, IdempotencyHeader(idempotencyKey), cancellationToken);
+
+    public Task<JsonElement?> GetClientAddressesAsync(long clientId, CancellationToken cancellationToken = default) =>
+        SendAsync(HttpMethod.Get, $"clients/{clientId}/addresses", null, null, null, cancellationToken);
+
+    public async Task UpdateClientAddressAsync(long clientId, string addressType, AddressModificationRequest body, CancellationToken cancellationToken = default) =>
+        await SendAsync(HttpMethod.Put, $"clients/{clientId}/addresses/{addressType}", ToElement(body), null, null, cancellationToken);
+
+    public Task<JsonElement?> AddContractAddressAsync(long contractId, AddressCreationRequest body, string? idempotencyKey, CancellationToken cancellationToken = default) =>
+        SendAsync(HttpMethod.Post, $"contracts/{contractId}/addresses", ToElement(body), null, IdempotencyHeader(idempotencyKey), cancellationToken);
+
+    public Task<JsonElement?> GetContractAddressesAsync(long contractId, CancellationToken cancellationToken = default) =>
+        SendAsync(HttpMethod.Get, $"contracts/{contractId}/addresses", null, null, null, cancellationToken);
+
+    public async Task UpdateContractAddressAsync(long contractId, string addressType, AddressModificationRequest body, CancellationToken cancellationToken = default) =>
+        await SendAsync(HttpMethod.Put, $"contracts/{contractId}/addresses/{addressType}", ToElement(body), null, null, cancellationToken);
+
+    // --- Classifier ---
+
+    public async Task SetClientClassifierAsync(long clientId, string classifierCode, ClassifierCreationRequest body, CancellationToken cancellationToken = default) =>
+        await SendAsync(HttpMethod.Put, $"clients/{clientId}/classifiers/{classifierCode}", ToElement(body), null, null, cancellationToken);
+
+    public Task<JsonElement?> GetClientClassifiersAsync(long clientId, string? classifierCodes, CancellationToken cancellationToken = default) =>
+        SendAsync(HttpMethod.Get, $"clients/{clientId}/classifiers", null, [("classifier_codes", classifierCodes)], null, cancellationToken);
+
+    public async Task SetContractClassifierAsync(long contractId, string classifierCode, ClassifierCreationRequest body, CancellationToken cancellationToken = default) =>
+        await SendAsync(HttpMethod.Put, $"contracts/{contractId}/classifiers/{classifierCode}", ToElement(body), null, null, cancellationToken);
+
+    public Task<JsonElement?> GetContractClassifiersAsync(long contractId, string? classifierCodes, CancellationToken cancellationToken = default) =>
+        SendAsync(HttpMethod.Get, $"contracts/{contractId}/classifiers", null, [("classifier_codes", classifierCodes)], null, cancellationToken);
+
+    // --- Custom data ---
+
+    public Task<JsonElement?> SetClientCustomDataAsync(long clientId, CustomDataTagsRequest body, string? idempotencyKey, CancellationToken cancellationToken = default) =>
+        SendAsync(HttpMethod.Post, $"clients/{clientId}/custom-data", ToElement(body), null, IdempotencyHeader(idempotencyKey), cancellationToken);
+
+    public Task<JsonElement?> GetClientCustomDataAsync(long clientId, string tagName, CancellationToken cancellationToken = default) =>
+        SendAsync(HttpMethod.Get, $"clients/{clientId}/custom-data/{Uri.EscapeDataString(tagName)}", null, null, null, cancellationToken);
+
+    public Task<JsonElement?> SetContractCustomDataAsync(long contractId, CustomDataTagsRequest body, string? idempotencyKey, CancellationToken cancellationToken = default) =>
+        SendAsync(HttpMethod.Post, $"contracts/{contractId}/custom-data", ToElement(body), null, IdempotencyHeader(idempotencyKey), cancellationToken);
+
+    public Task<JsonElement?> GetContractCustomDataAsync(long contractId, string tagName, CancellationToken cancellationToken = default) =>
+        SendAsync(HttpMethod.Get, $"contracts/{contractId}/custom-data/{Uri.EscapeDataString(tagName)}", null, null, null, cancellationToken);
+
+    // --- Parameter ---
+
+    public async Task SetContractParameterAsync(long contractId, string parameterCode, ParameterModificationRequest body, CancellationToken cancellationToken = default) =>
+        await SendAsync(HttpMethod.Put, $"contracts/{contractId}/parameters/{parameterCode}", ToElement(body), null, null, cancellationToken);
+
+    public Task<JsonElement?> GetContractParametersAsync(long contractId, string? parameterCodes, CancellationToken cancellationToken = default) =>
+        SendAsync(HttpMethod.Get, $"contracts/{contractId}/parameters", null, [("parameter_codes", parameterCodes)], null, cancellationToken);
+
+    // --- Transaction ---
+
+    public Task<JsonElement?> DebitContractAsync(long contractId, TransactionContractDebitRequest body, string? idempotencyKey, CancellationToken cancellationToken = default) =>
+        SendAsync(HttpMethod.Post, $"contracts/{contractId}/debits", ToElement(body), null, IdempotencyHeader(idempotencyKey), cancellationToken);
+
+    public Task<JsonElement?> CreditContractAsync(long contractId, TransactionContractCreditRequest body, string? idempotencyKey, CancellationToken cancellationToken = default) =>
+        SendAsync(HttpMethod.Post, $"contracts/{contractId}/credits", ToElement(body), null, IdempotencyHeader(idempotencyKey), cancellationToken);
+
+    public Task<JsonElement?> ChargeFeeAsync(long contractId, ChargeFeeRequest body, string? idempotencyKey, CancellationToken cancellationToken = default) =>
+        SendAsync(HttpMethod.Post, $"contracts/{contractId}/charge-fees", ToElement(body), null, IdempotencyHeader(idempotencyKey), cancellationToken);
+
+    public Task<JsonElement?> GetTransactionsAsync(
+        long contractId, string? transactionDateFrom, string? transactionDateTo, string? transactionAuthorizationFilterMode,
+        bool? transactionAuthorized, int? limit, int? offset, string? transactionTypeCodes, CancellationToken cancellationToken = default) =>
+        SendAsync(HttpMethod.Get, $"contracts/{contractId}/transactions", null,
+            [
+                ("transaction_date_from", transactionDateFrom),
+                ("transaction_date_to", transactionDateTo),
+                ("transaction_authorization_filter_mode", transactionAuthorizationFilterMode),
+                ("transaction_authorized", transactionAuthorized?.ToString()),
+                ("limit", limit?.ToString()),
+                ("offset", offset?.ToString()),
+                ("transaction_type_codes", transactionTypeCodes)
+            ], null, cancellationToken);
+
+    public Task<JsonElement?> GetContractTransactionDocumentsAsync(
+        long contractId, string? transactionDateFrom, string? transactionDateTo, string? transactionAuthorizationFilterMode,
+        bool? transactionCollectAuthorizations, bool? contractHierarchy, string? direction, int? limit, int? offset,
+        string? transactionTypeCodes, CancellationToken cancellationToken = default) =>
+        SendAsync(HttpMethod.Get, $"contracts/{contractId}/transaction-documents", null,
+            [
+                ("transaction_date_from", transactionDateFrom),
+                ("transaction_date_to", transactionDateTo),
+                ("transaction_authorization_filter_mode", transactionAuthorizationFilterMode),
+                ("transaction_collect_authorizations", transactionCollectAuthorizations?.ToString()),
+                ("contract_hierarchy", contractHierarchy?.ToString()),
+                ("direction", direction),
+                ("limit", limit?.ToString()),
+                ("offset", offset?.ToString()),
+                ("transaction_type_codes", transactionTypeCodes)
+            ], null, cancellationToken);
+
+    public Task<JsonElement?> GetTransactionDocumentsAsync(
+        string transactionSelectorType, string transactionSelectorValue, int? limit, int? offset, CancellationToken cancellationToken = default) =>
+        SendAsync(HttpMethod.Get, "transaction-documents", null,
+            [("transaction_selector_type", transactionSelectorType), ("transaction_selector_value", transactionSelectorValue),
+             ("limit", limit?.ToString()), ("offset", offset?.ToString())], null, cancellationToken);
+
+    public Task<JsonElement?> GetTransactionFeesAsync(long transactionId, CancellationToken cancellationToken = default) =>
+        SendAsync(HttpMethod.Get, $"transactions/{transactionId}/fees", null, null, null, cancellationToken);
+
+    public async Task ReleaseBlockedFundsAsync(long contractId, long transactionId, BlockedFundsReleaseRequest body, CancellationToken cancellationToken = default) =>
+        await SendAsync(HttpMethod.Put, $"contracts/{contractId}/transactions/{transactionId}/releasing-blocked-funds", ToElement(body), null, null, cancellationToken);
+
+    public Task<JsonElement?> ReverseTransactionAsync(long transactionId, ReverseTransactionReasonRequest body, string? idempotencyKey, CancellationToken cancellationToken = default) =>
+        SendAsync(HttpMethod.Post, $"transactions/{transactionId}/reversals", ToElement(body), null, IdempotencyHeader(idempotencyKey), cancellationToken);
+
+    // --- Usage limit ---
+
+    public async Task SetUsageLimitAsync(long contractId, string usageLimitCode, UsageLimitModificationRequest body, CancellationToken cancellationToken = default) =>
+        await SendAsync(HttpMethod.Put, $"contracts/{contractId}/usage-limits/{usageLimitCode}", ToElement(body), null, null, cancellationToken);
+
+    public Task<JsonElement?> GetUsageLimitsAsync(long contractId, string? usageLimitCodes, CancellationToken cancellationToken = default) =>
+        SendAsync(HttpMethod.Get, $"contracts/{contractId}/usage-limits", null, [("usage_limit_codes", usageLimitCodes)], null, cancellationToken);
+
+    public async Task RestoreUsageLimitOriginalValuesAsync(long contractId, string usageLimitCode, CancellationToken cancellationToken = default) =>
+        await SendAsync(HttpMethod.Put, $"contracts/{contractId}/usage-limits/{usageLimitCode}/original-values", null, null, null, cancellationToken);
+
+    public async Task ResetUsageLimitCountersAsync(long contractId, string usageLimitCode, UsageLimitResettingRequest body, CancellationToken cancellationToken = default) =>
+        await SendAsync(HttpMethod.Put, $"contracts/{contractId}/usage-limits/{usageLimitCode}/resetting-counters", ToElement(body), null, null, cancellationToken);
+
+    public async Task ChangeUsageLimitStatusAsync(long contractId, string usageLimitCode, UsageLimitStatusRequest body, CancellationToken cancellationToken = default) =>
+        await SendAsync(HttpMethod.Put, $"contracts/{contractId}/usage-limits/{usageLimitCode}/status", ToElement(body), null, null, cancellationToken);
+
+    // --- Tariff ---
+
+    public Task<JsonElement?> SetServiceLimitTariffAsync(long contractId, ServiceLimitTariffRequest body, string? idempotencyKey, CancellationToken cancellationToken = default) =>
+        SendAsync(HttpMethod.Post, $"contracts/{contractId}/service-limit-tariffs", ToElement(body), null, IdempotencyHeader(idempotencyKey), cancellationToken);
+
+    public Task<JsonElement?> GetContractTariffDataAsync(
+        long contractId, int? limit, int? offset, string? personalisationType, string? tariffCode,
+        string? tariffDomainCode, string? tariffRole, string? tariffTypeCode, CancellationToken cancellationToken = default) =>
+        SendAsync(HttpMethod.Get, $"contracts/{contractId}/tariff-data", null,
+            [
+                ("limit", limit?.ToString()),
+                ("offset", offset?.ToString()),
+                ("personalisation_type", personalisationType),
+                ("tariff_code", tariffCode),
+                ("tariff_domain_code", tariffDomainCode),
+                ("tariff_role", tariffRole),
+                ("tariff_type_code", tariffTypeCode)
+            ], null, cancellationToken);
+
+    // --- Search ---
+
+    public Task<JsonElement?> GetClientIdAsync(ClientIdentifierSearchRequest body, string? idempotencyKey, CancellationToken cancellationToken = default) =>
+        SendAsync(HttpMethod.Post, "clients/searches", ToElement(body), null, IdempotencyHeader(idempotencyKey), cancellationToken);
+
+    public Task<JsonElement?> GetAccountContractIdAsync(AccountContractIdentifierSearchRequest body, string? idempotencyKey, CancellationToken cancellationToken = default) =>
+        SendAsync(HttpMethod.Post, "accounts/searches", ToElement(body), null, IdempotencyHeader(idempotencyKey), cancellationToken);
+
+    public Task<JsonElement?> GetCardContractIdAsync(CardContractIdentifierSearchRequest body, string? idempotencyKey, CancellationToken cancellationToken = default) =>
+        SendAsync(HttpMethod.Post, "cards/searches", ToElement(body), null, IdempotencyHeader(idempotencyKey), cancellationToken);
+
+    // --- Security ---
+
+    public Task<JsonElement?> GetPublicRsaKeyAsync(string dateTypeToSecure, CancellationToken cancellationToken = default) =>
+        SendAsync(HttpMethod.Get, "public-keys", null, [("date_type_to_secure", dateTypeToSecure)], null, cancellationToken);
+
+    private async Task<T> SendAsync<T>(string requestUri, CancellationToken cancellationToken)
+    {
+        using var response = await _httpClient.GetAsync(requestUri, cancellationToken);
+        if (!response.IsSuccessStatusCode)
+        {
+            var body = await response.Content.ReadAsStringAsync(cancellationToken);
+            throw new MastercardApiException((int)response.StatusCode, body);
+        }
+
+        var result = await response.Content.ReadFromJsonAsync<T>(SerializerOptions, cancellationToken);
+        return result ?? throw new MastercardApiException((int)response.StatusCode, "Empty response body.");
+    }
+}

@@ -1,0 +1,12 @@
+﻿using System.Reflection;
+
+var asm = Assembly.Load("Mastercard.Developer.ClientEncryption.Core");
+foreach (var t in asm.GetExportedTypes().OrderBy(t => t.FullName))
+{
+    Console.WriteLine(t.FullName);
+    foreach (var m in t.GetMethods(BindingFlags.Public | BindingFlags.Static | BindingFlags.Instance | BindingFlags.DeclaredOnly))
+    {
+        if (!m.IsSpecialName)
+            Console.WriteLine("    " + m);
+    }
+}

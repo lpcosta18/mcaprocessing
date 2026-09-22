@@ -1,0 +1,48 @@
+﻿using System.Net;
+using System.Net.Http.Json;
+using Microsoft.AspNetCore.Mvc.Testing;
+using Microsoft.AspNetCore.TestHost;
+using Microsoft.Extensions.DependencyInjection;
+using Unico.Mastercard.Api.Client;
+using Unico.Mastercard.Api.Models;
+
+namespace Unico.Mastercard.Api.Tests;
+
+public sealed class ProcessingCoreEndpointsTests(WebApplicationFactory<Program> factory)
+    : IClassFixture<WebApplicationFactory<Program>>
+{
+    // Force the mock client regardless of ambient Mastercard:UseMock configuration, so tests never
+    // depend on network access or real credentials.
+    private WebApplicationFactory<Program> CreateFactory() => factory.WithWebHostBuilder(builder =>
+        builder.ConfigureTestServices(services =>
+            services.AddSingleton<IProcessingCoreClient, MockProcessingCoreClient>()));
+
+    [Fact]
+    public async Task GetAccountContracts_ReturnsMockData()
+    {
+        var client = CreateFactory().CreateClient();
+
+        var response = await client.GetAsync("/api/processing-core/clients/40000/account-contracts?offset=0&limit=2");
+
+        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+        var body = await response.Content.ReadFromJsonAsync<AccountContractsResponse>();
+        Assert.NotNull(body);
+        Assert.Single(body!.ClientAccountContracts);
+        Assert.Equal("North Division Account", body.ClientAccountContracts[0].AccountContractName);
+    }
+
+    [Fact]
+    public async Task GetContractBalances_ReturnsRequestedBalanceCodes()
+    {
+        var client = CreateFactory().CreateClient();
+
+        var response = await client.GetAsync("/api/processing-core/contracts/70001/balances?balanceCodes=AVAILABLE,BLOCKED");
+
+        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+        var body = await response.Content.ReadFromJsonAsync<ContractBalancesResponse>();
+        Assert.NotNull(body);
+        Assert.Equal(2, body!.ContractBalances.Count);
+        Assert.Equal("AVAILABLE", body.ContractBalances[0].BalanceCode);
+        Assert.Equal("BLOCKED", body.ContractBalances[1].BalanceCode);
+    }
+}

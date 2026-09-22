@@ -1,0 +1,15 @@
+﻿using Unico.Mastercard.Api.Models;
+
+namespace Unico.Mastercard.Api.Client;
+
+/// <summary>Client for the two supported Mastercard Processing Core operations.</summary>
+public interface IProcessingCoreClient
+{
+    /// <summary>GET /clients/{clientId}/account-contracts — list account contracts for a client.</summary>
+    Task<AccountContractsResponse> GetAccountContractsAsync(
+        string clientId, int offset, int limit, CancellationToken cancellationToken = default);
+
+    /// <summary>GET /contracts/{contractId}/balances — retrieve balances for an account or card contract.</summary>
+    Task<ContractBalancesResponse> GetContractBalancesAsync(
+        string contractId, IReadOnlyCollection<string> balanceCodes, CancellationToken cancellationToken = default);
+}

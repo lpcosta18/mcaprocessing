@@ -1,0 +1,5355 @@
+{
+  "openapi": "3.1.1",
+  "info": {
+    "title": "Unico.Mastercard.Api | v1",
+    "version": "1.0.0"
+  },
+  "servers": [
+    {
+      "url": "https://localhost:7258"
+    },
+    {
+      "url": "http://localhost:5193"
+    }
+  ],
+  "paths": {
+    "/api/processing-core/clients/{clientId}/account-contracts": {
+      "get": {
+        "tags": [
+          "Mastercard Processing Core"
+        ],
+        "summary": "Retrieve a list of account contracts for a client",
+        "operationId": "GetAccountContracts",
+        "parameters": [
+          {
+            "name": "clientId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "offset",
+            "in": "query",
+            "schema": {
+              "pattern": "^-?(?:0|[1-9]\\d*)$",
+              "type": [
+                "integer",
+                "string"
+              ],
+              "format": "int32",
+              "default": 0
+            }
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "schema": {
+              "pattern": "^-?(?:0|[1-9]\\d*)$",
+              "type": [
+                "integer",
+                "string"
+              ],
+              "format": "int32",
+              "default": 10
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AccountContractsResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/processing-core/contracts/{contractId}/balances": {
+      "get": {
+        "tags": [
+          "Mastercard Processing Core"
+        ],
+        "summary": "Retrieve balances for an account or card contract",
+        "operationId": "GetContractBalances",
+        "parameters": [
+          {
+            "name": "contractId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "balanceCodes",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ContractBalancesResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/processing-core/clients": {
+      "post": {
+        "tags": [
+          "Client"
+        ],
+        "summary": "Creates a client",
+        "operationId": "CreateClient",
+        "parameters": [
+          {
+            "name": "idempotencyKey",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ClientCreationRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
+    "/api/processing-core/clients/{clientId}": {
+      "get": {
+        "tags": [
+          "Client"
+        ],
+        "summary": "Retrieves a client",
+        "operationId": "GetClient",
+        "parameters": [
+          {
+            "name": "clientId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "pattern": "^-?(?:0|[1-9]\\d*)$",
+              "type": "integer",
+              "format": "int64"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      },
+      "patch": {
+        "tags": [
+          "Client"
+        ],
+        "summary": "Updates a client",
+        "operationId": "UpdateClient",
+        "parameters": [
+          {
+            "name": "clientId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "pattern": "^-?(?:0|[1-9]\\d*)$",
+              "type": "integer",
+              "format": "int64"
+            }
+          },
+          {
+            "name": "ifMatch",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "idempotencyKey",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ClientModificationRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
+    "/api/processing-core/clients/{clientId}/card-contracts": {
+      "get": {
+        "tags": [
+          "Client"
+        ],
+        "summary": "Retrieves a list of card contracts for a specified client",
+        "operationId": "GetCardContractsByClient",
+        "parameters": [
+          {
+            "name": "clientId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "pattern": "^-?(?:0|[1-9]\\d*)$",
+              "type": "integer",
+              "format": "int64"
+            }
+          },
+          {
+            "name": "creationDateFrom",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "statuses",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "schema": {
+              "pattern": "^-?(?:0|[1-9]\\d*)$",
+              "type": [
+                "integer",
+                "string"
+              ],
+              "format": "int32"
+            }
+          },
+          {
+            "name": "offset",
+            "in": "query",
+            "schema": {
+              "pattern": "^-?(?:0|[1-9]\\d*)$",
+              "type": [
+                "integer",
+                "string"
+              ],
+              "format": "int32"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
+    "/api/processing-core/clients/{clientId}/online-pin-attempts-counter": {
+      "put": {
+        "tags": [
+          "Client"
+        ],
+        "summary": "Resets Online PIN Try Counter",
+        "operationId": "ClearOnlinePinAttemptsForClient",
+        "parameters": [
+          {
+            "name": "clientId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "pattern": "^-?(?:0|[1-9]\\d*)$",
+              "type": "integer",
+              "format": "int64"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
+    "/api/processing-core/contracts/{contractId}/events": {
+      "post": {
+        "tags": [
+          "Contract"
+        ],
+        "summary": "Opens an event for a specified contract",
+        "operationId": "OpenEvent",
+        "parameters": [
+          {
+            "name": "contractId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "pattern": "^-?(?:0|[1-9]\\d*)$",
+              "type": "integer",
+              "format": "int64"
+            }
+          },
+          {
+            "name": "idempotencyKey",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/EventRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
+    "/api/processing-core/contracts/{contractId}/financials": {
+      "get": {
+        "tags": [
+          "Contract"
+        ],
+        "summary": "Retrieves contract's financial information",
+        "operationId": "GetContractFinancials",
+        "parameters": [
+          {
+            "name": "contractId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "pattern": "^-?(?:0|[1-9]\\d*)$",
+              "type": "integer",
+              "format": "int64"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
+    "/api/processing-core/contracts/{contractId}/technical-accounts": {
+      "get": {
+        "tags": [
+          "Contract"
+        ],
+        "summary": "Retrieves technical accounts for a specified contract",
+        "operationId": "GetTechnicalAccounts",
+        "parameters": [
+          {
+            "name": "contractId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "pattern": "^-?(?:0|[1-9]\\d*)$",
+              "type": "integer",
+              "format": "int64"
+            }
+          },
+          {
+            "name": "technicalAccountCode",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
+    "/api/processing-core/contracts/{contractId}/tree-summaries": {
+      "get": {
+        "tags": [
+          "Contract"
+        ],
+        "summary": "Retrieves summary of the contracts for a specified contract",
+        "operationId": "GetContractTreeSummary",
+        "parameters": [
+          {
+            "name": "contractId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "pattern": "^-?(?:0|[1-9]\\d*)$",
+              "type": "integer",
+              "format": "int64"
+            }
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "schema": {
+              "pattern": "^-?(?:0|[1-9]\\d*)$",
+              "type": [
+                "integer",
+                "string"
+              ],
+              "format": "int32"
+            }
+          },
+          {
+            "name": "offset",
+            "in": "query",
+            "schema": {
+              "pattern": "^-?(?:0|[1-9]\\d*)$",
+              "type": [
+                "integer",
+                "string"
+              ],
+              "format": "int32"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
+    "/api/processing-core/contracts/{contractId}/main-contract": {
+      "put": {
+        "tags": [
+          "Contract"
+        ],
+        "summary": "Relinks a subaccount or card contract to another account contract",
+        "operationId": "ChangeContractMainContract",
+        "parameters": [
+          {
+            "name": "contractId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "pattern": "^-?(?:0|[1-9]\\d*)$",
+              "type": "integer",
+              "format": "int64"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AccountContractIdentifierWithClientIdentifierRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
+    "/api/processing-core/contracts/{contractId}/authentication-method": {
+      "put": {
+        "tags": [
+          "Contract"
+        ],
+        "summary": "Sets up a contract authentication method",
+        "operationId": "SetAuthenticationMethod",
+        "parameters": [
+          {
+            "name": "contractId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "pattern": "^-?(?:0|[1-9]\\d*)$",
+              "type": "integer",
+              "format": "int64"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AuthenticationMethodRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
+    "/api/processing-core/contracts/{contractId}/authentication-parameter-values": {
+      "get": {
+        "tags": [
+          "Contract"
+        ],
+        "summary": "Retrieves the value of a given authentication parameter",
+        "operationId": "GetAuthenticationParameterValue",
+        "parameters": [
+          {
+            "name": "contractId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "pattern": "^-?(?:0|[1-9]\\d*)$",
+              "type": "integer",
+              "format": "int64"
+            }
+          },
+          {
+            "name": "authenticationParameterName",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "authenticationTypeCode",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
+    "/api/processing-core/accounts": {
+      "post": {
+        "tags": [
+          "Account contract"
+        ],
+        "summary": "Creates an account contract",
+        "operationId": "CreateAccountContract",
+        "parameters": [
+          {
+            "name": "idempotencyKey",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AccountContractCreationRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
+    "/api/processing-core/accounts/{accountContractId}": {
+      "get": {
+        "tags": [
+          "Account contract"
+        ],
+        "summary": "Retrieves an account contract",
+        "operationId": "GetAccountContract",
+        "parameters": [
+          {
+            "name": "accountContractId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "pattern": "^-?(?:0|[1-9]\\d*)$",
+              "type": "integer",
+              "format": "int64"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      },
+      "patch": {
+        "tags": [
+          "Account contract"
+        ],
+        "summary": "Updates an account contract",
+        "operationId": "UpdateAccountContract",
+        "parameters": [
+          {
+            "name": "accountContractId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "pattern": "^-?(?:0|[1-9]\\d*)$",
+              "type": "integer",
+              "format": "int64"
+            }
+          },
+          {
+            "name": "ifMatch",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "idempotencyKey",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AccountContractModificationRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
+    "/api/processing-core/accounts/{accountContractId}/status": {
+      "put": {
+        "tags": [
+          "Account contract"
+        ],
+        "summary": "Changes an account contract status",
+        "operationId": "ChangeAccountContractStatus",
+        "parameters": [
+          {
+            "name": "accountContractId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "pattern": "^-?(?:0|[1-9]\\d*)$",
+              "type": "integer",
+              "format": "int64"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AccountContractStatusWithReasonRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
+    "/api/processing-core/accounts/{accountContractId}/statuses": {
+      "get": {
+        "tags": [
+          "Account contract"
+        ],
+        "summary": "Retrieves account contract status",
+        "operationId": "GetAccountContractStatus",
+        "parameters": [
+          {
+            "name": "accountContractId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "pattern": "^-?(?:0|[1-9]\\d*)$",
+              "type": "integer",
+              "format": "int64"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
+    "/api/processing-core/accounts/{accountContractId}/client-identifier": {
+      "put": {
+        "tags": [
+          "Account contract"
+        ],
+        "summary": "Relinks an account contract to another client",
+        "operationId": "ChangeAccountContractClient",
+        "parameters": [
+          {
+            "name": "accountContractId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "pattern": "^-?(?:0|[1-9]\\d*)$",
+              "type": "integer",
+              "format": "int64"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ClientIdentifierWithRelinkTypeRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
+    "/api/processing-core/accounts/{accountContractId}/sub-accounts": {
+      "get": {
+        "tags": [
+          "Account contract"
+        ],
+        "summary": "Retrieves a list of subaccount contracts for a specified account contract",
+        "operationId": "GetSubAccountContracts",
+        "parameters": [
+          {
+            "name": "accountContractId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "pattern": "^-?(?:0|[1-9]\\d*)$",
+              "type": "integer",
+              "format": "int64"
+            }
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "schema": {
+              "pattern": "^-?(?:0|[1-9]\\d*)$",
+              "type": [
+                "integer",
+                "string"
+              ],
+              "format": "int32"
+            }
+          },
+          {
+            "name": "offset",
+            "in": "query",
+            "schema": {
+              "pattern": "^-?(?:0|[1-9]\\d*)$",
+              "type": [
+                "integer",
+                "string"
+              ],
+              "format": "int32"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
+    "/api/processing-core/accounts/{accountContractId}/card-contracts": {
+      "get": {
+        "tags": [
+          "Account contract"
+        ],
+        "summary": "Retrieves a list of card contracts for a specified account contract",
+        "operationId": "GetCardContractsByAccount",
+        "parameters": [
+          {
+            "name": "accountContractId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "pattern": "^-?(?:0|[1-9]\\d*)$",
+              "type": "integer",
+              "format": "int64"
+            }
+          },
+          {
+            "name": "creationDateFrom",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "statuses",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "schema": {
+              "pattern": "^-?(?:0|[1-9]\\d*)$",
+              "type": [
+                "integer",
+                "string"
+              ],
+              "format": "int32"
+            }
+          },
+          {
+            "name": "offset",
+            "in": "query",
+            "schema": {
+              "pattern": "^-?(?:0|[1-9]\\d*)$",
+              "type": [
+                "integer",
+                "string"
+              ],
+              "format": "int32"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
+    "/api/processing-core/cards": {
+      "post": {
+        "tags": [
+          "Card contract"
+        ],
+        "summary": "Creates a card contract",
+        "operationId": "CreateCardContract",
+        "parameters": [
+          {
+            "name": "idempotencyKey",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CardContractCreationRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
+    "/api/processing-core/cards/{cardContractId}": {
+      "get": {
+        "tags": [
+          "Card contract"
+        ],
+        "summary": "Retrieves a card contract",
+        "operationId": "GetCardContract",
+        "parameters": [
+          {
+            "name": "cardContractId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "pattern": "^-?(?:0|[1-9]\\d*)$",
+              "type": "integer",
+              "format": "int64"
+            }
+          },
+          {
+            "name": "fieldsSelection",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "customerPublicRsaKey",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      },
+      "patch": {
+        "tags": [
+          "Card contract"
+        ],
+        "summary": "Updates a card contract",
+        "operationId": "UpdateCardContract",
+        "parameters": [
+          {
+            "name": "cardContractId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "pattern": "^-?(?:0|[1-9]\\d*)$",
+              "type": "integer",
+              "format": "int64"
+            }
+          },
+          {
+            "name": "ifMatch",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "idempotencyKey",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CardContractModificationRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
+    "/api/processing-core/cards/details-verifications": {
+      "post": {
+        "tags": [
+          "Card contract"
+        ],
+        "summary": "Verifies card details",
+        "operationId": "VerifyCardDetails",
+        "parameters": [
+          {
+            "name": "idempotencyKey",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CardContractDetailsVerificationRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
+    "/api/processing-core/cards/{cardContractId}/status": {
+      "put": {
+        "tags": [
+          "Card contract"
+        ],
+        "summary": "Sets new status for the card contract",
+        "operationId": "ChangeCardContractStatus",
+        "parameters": [
+          {
+            "name": "cardContractId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "pattern": "^-?(?:0|[1-9]\\d*)$",
+              "type": "integer",
+              "format": "int64"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CardContractStatusWithReasonRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
+    "/api/processing-core/cards/{cardContractId}/statuses": {
+      "get": {
+        "tags": [
+          "Card contract"
+        ],
+        "summary": "Retrieves card contract status",
+        "operationId": "GetCardContractStatus",
+        "parameters": [
+          {
+            "name": "cardContractId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "pattern": "^-?(?:0|[1-9]\\d*)$",
+              "type": "integer",
+              "format": "int64"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
+    "/api/processing-core/cards/{cardContractId}/client-identifier": {
+      "put": {
+        "tags": [
+          "Card contract"
+        ],
+        "summary": "Relinks a card contract to another client",
+        "operationId": "ChangeCardContractClient",
+        "parameters": [
+          {
+            "name": "cardContractId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "pattern": "^-?(?:0|[1-9]\\d*)$",
+              "type": "integer",
+              "format": "int64"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ClientIdentifierWithRelinkTypeRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
+    "/api/processing-core/cards/{cardContractId}/main-contract": {
+      "put": {
+        "tags": [
+          "Card contract"
+        ],
+        "summary": "Relinks a card contract to another account contract",
+        "operationId": "ChangeCardContractMainContract",
+        "parameters": [
+          {
+            "name": "cardContractId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "pattern": "^-?(?:0|[1-9]\\d*)$",
+              "type": "integer",
+              "format": "int64"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AccountContractIdentifierRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
+    "/api/processing-core/cards/{cardContractId}/online-pin-attempts-counter": {
+      "put": {
+        "tags": [
+          "Card contract"
+        ],
+        "summary": "Resets Online PIN Try Counter",
+        "operationId": "ClearOnlinePinAttempts",
+        "parameters": [
+          {
+            "name": "cardContractId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "pattern": "^-?(?:0|[1-9]\\d*)$",
+              "type": "integer",
+              "format": "int64"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
+    "/api/processing-core/cards/{cardContractId}/active": {
+      "put": {
+        "tags": [
+          "Card plastic"
+        ],
+        "summary": "Activates a card plastic and unlocks the card for transaction use",
+        "operationId": "ActivateCard",
+        "parameters": [
+          {
+            "name": "cardContractId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "pattern": "^-?(?:0|[1-9]\\d*)$",
+              "type": "integer",
+              "format": "int64"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
+    "/api/processing-core/cards/{cardContractId}/pin": {
+      "put": {
+        "tags": [
+          "Card plastic"
+        ],
+        "summary": "Sets up new PIN for a card plastic",
+        "operationId": "SetPin",
+        "parameters": [
+          {
+            "name": "cardContractId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "pattern": "^-?(?:0|[1-9]\\d*)$",
+              "type": "integer",
+              "format": "int64"
+            }
+          },
+          {
+            "name": "keyIndex",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "pattern": "^-?(?:0|[1-9]\\d*)$",
+              "type": [
+                "integer",
+                "string"
+              ],
+              "format": "int32"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/PinCreationRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
+    "/api/processing-core/cards/{cardContractId}/pins/searches": {
+      "post": {
+        "tags": [
+          "Card plastic"
+        ],
+        "summary": "Retrieves a PIN for a card plastic",
+        "operationId": "GetPin",
+        "parameters": [
+          {
+            "name": "cardContractId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "pattern": "^-?(?:0|[1-9]\\d*)$",
+              "type": "integer",
+              "format": "int64"
+            }
+          },
+          {
+            "name": "customerPublicRsaKey",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "idempotencyKey",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
+    "/api/processing-core/cards/{cardContractId}/pins/verifications": {
+      "post": {
+        "tags": [
+          "Card plastic"
+        ],
+        "summary": "Verifies a PIN",
+        "operationId": "VerifyPin",
+        "parameters": [
+          {
+            "name": "cardContractId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "pattern": "^-?(?:0|[1-9]\\d*)$",
+              "type": "integer",
+              "format": "int64"
+            }
+          },
+          {
+            "name": "keyIndex",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "pattern": "^-?(?:0|[1-9]\\d*)$",
+              "type": [
+                "integer",
+                "string"
+              ],
+              "format": "int32"
+            }
+          },
+          {
+            "name": "idempotencyKey",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/PinVerificationRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
+    "/api/processing-core/cards/{cardContractId}/card-verification-codes/searches": {
+      "post": {
+        "tags": [
+          "Card plastic"
+        ],
+        "summary": "Retrieves a CVC2 for a card plastic",
+        "operationId": "GetCvc",
+        "parameters": [
+          {
+            "name": "cardContractId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "pattern": "^-?(?:0|[1-9]\\d*)$",
+              "type": "integer",
+              "format": "int64"
+            }
+          },
+          {
+            "name": "customerPublicRsaKey",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "idempotencyKey",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
+    "/api/processing-core/cards/{cardContractId}/card-verification-codes/verifications": {
+      "post": {
+        "tags": [
+          "Card plastic"
+        ],
+        "summary": "Verifies a CVC2 of specific card plastic",
+        "operationId": "VerifyCvc",
+        "parameters": [
+          {
+            "name": "cardContractId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "pattern": "^-?(?:0|[1-9]\\d*)$",
+              "type": "integer",
+              "format": "int64"
+            }
+          },
+          {
+            "name": "idempotencyKey",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CvcVerificationRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
+    "/api/processing-core/cards/{cardContractId}/plastics": {
+      "post": {
+        "tags": [
+          "Card plastic"
+        ],
+        "summary": "Reissues a card",
+        "operationId": "ReissueCard",
+        "parameters": [
+          {
+            "name": "cardContractId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "pattern": "^-?(?:0|[1-9]\\d*)$",
+              "type": "integer",
+              "format": "int64"
+            }
+          },
+          {
+            "name": "idempotencyKey",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CardContractReissueRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      },
+      "get": {
+        "tags": [
+          "Card plastic"
+        ],
+        "summary": "Retrieves information about all card plastics for a specified card contract",
+        "operationId": "GetCardPlastics",
+        "parameters": [
+          {
+            "name": "cardContractId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "pattern": "^-?(?:0|[1-9]\\d*)$",
+              "type": "integer",
+              "format": "int64"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
+    "/api/processing-core/clients/{clientId}/addresses": {
+      "post": {
+        "tags": [
+          "Address"
+        ],
+        "summary": "Creates an address for a client",
+        "operationId": "AddClientAddress",
+        "parameters": [
+          {
+            "name": "clientId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "pattern": "^-?(?:0|[1-9]\\d*)$",
+              "type": "integer",
+              "format": "int64"
+            }
+          },
+          {
+            "name": "idempotencyKey",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AddressCreationRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      },
+      "get": {
+        "tags": [
+          "Address"
+        ],
+        "summary": "Retrieves a list of addresses for the client",
+        "operationId": "GetClientAddresses",
+        "parameters": [
+          {
+            "name": "clientId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "pattern": "^-?(?:0|[1-9]\\d*)$",
+              "type": "integer",
+              "format": "int64"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
+    "/api/processing-core/clients/{clientId}/addresses/{addressType}": {
+      "put": {
+        "tags": [
+          "Address"
+        ],
+        "summary": "Updates an address of a selected type for the client",
+        "operationId": "UpdateClientAddress",
+        "parameters": [
+          {
+            "name": "clientId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "pattern": "^-?(?:0|[1-9]\\d*)$",
+              "type": "integer",
+              "format": "int64"
+            }
+          },
+          {
+            "name": "addressType",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AddressModificationRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
+    "/api/processing-core/contracts/{contractId}/addresses": {
+      "post": {
+        "tags": [
+          "Address"
+        ],
+        "summary": "Creates an address for the contract",
+        "operationId": "AddContractAddress",
+        "parameters": [
+          {
+            "name": "contractId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "pattern": "^-?(?:0|[1-9]\\d*)$",
+              "type": "integer",
+              "format": "int64"
+            }
+          },
+          {
+            "name": "idempotencyKey",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AddressCreationRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      },
+      "get": {
+        "tags": [
+          "Address"
+        ],
+        "summary": "Retrieves a list of addresses for the contract",
+        "operationId": "GetContractAddresses",
+        "parameters": [
+          {
+            "name": "contractId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "pattern": "^-?(?:0|[1-9]\\d*)$",
+              "type": "integer",
+              "format": "int64"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
+    "/api/processing-core/contracts/{contractId}/addresses/{addressType}": {
+      "put": {
+        "tags": [
+          "Address"
+        ],
+        "summary": "Updates an address of a selected type for the contract",
+        "operationId": "UpdateContractAddress",
+        "parameters": [
+          {
+            "name": "contractId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "pattern": "^-?(?:0|[1-9]\\d*)$",
+              "type": "integer",
+              "format": "int64"
+            }
+          },
+          {
+            "name": "addressType",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AddressModificationRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
+    "/api/processing-core/clients/{clientId}/classifiers/{classifierCode}": {
+      "put": {
+        "tags": [
+          "Classifier"
+        ],
+        "summary": "Sets up a client classifier",
+        "operationId": "SetClientClassifier",
+        "parameters": [
+          {
+            "name": "clientId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "pattern": "^-?(?:0|[1-9]\\d*)$",
+              "type": "integer",
+              "format": "int64"
+            }
+          },
+          {
+            "name": "classifierCode",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ClassifierCreationRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
+    "/api/processing-core/clients/{clientId}/classifiers": {
+      "get": {
+        "tags": [
+          "Classifier"
+        ],
+        "summary": "Retrieves a client classifier",
+        "operationId": "GetClientClassifiers",
+        "parameters": [
+          {
+            "name": "clientId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "pattern": "^-?(?:0|[1-9]\\d*)$",
+              "type": "integer",
+              "format": "int64"
+            }
+          },
+          {
+            "name": "classifierCodes",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
+    "/api/processing-core/contracts/{contractId}/classifiers/{classifierCode}": {
+      "put": {
+        "tags": [
+          "Classifier"
+        ],
+        "summary": "Sets up a contract's classifier",
+        "operationId": "SetContractClassifier",
+        "parameters": [
+          {
+            "name": "contractId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "pattern": "^-?(?:0|[1-9]\\d*)$",
+              "type": "integer",
+              "format": "int64"
+            }
+          },
+          {
+            "name": "classifierCode",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ClassifierCreationRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
+    "/api/processing-core/contracts/{contractId}/classifiers": {
+      "get": {
+        "tags": [
+          "Classifier"
+        ],
+        "summary": "Retrieves contract's classifier",
+        "operationId": "GetContractClassifiers",
+        "parameters": [
+          {
+            "name": "contractId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "pattern": "^-?(?:0|[1-9]\\d*)$",
+              "type": "integer",
+              "format": "int64"
+            }
+          },
+          {
+            "name": "classifierCodes",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
+    "/api/processing-core/clients/{clientId}/custom-data": {
+      "post": {
+        "tags": [
+          "Custom Data"
+        ],
+        "summary": "Sets up a custom data for a client",
+        "operationId": "SetClientCustomData",
+        "parameters": [
+          {
+            "name": "clientId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "pattern": "^-?(?:0|[1-9]\\d*)$",
+              "type": "integer",
+              "format": "int64"
+            }
+          },
+          {
+            "name": "idempotencyKey",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CustomDataTagsRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
+    "/api/processing-core/clients/{clientId}/custom-data/{tagName}": {
+      "get": {
+        "tags": [
+          "Custom Data"
+        ],
+        "summary": "Retrieves selected custom data for a client",
+        "operationId": "GetClientCustomData",
+        "parameters": [
+          {
+            "name": "clientId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "pattern": "^-?(?:0|[1-9]\\d*)$",
+              "type": "integer",
+              "format": "int64"
+            }
+          },
+          {
+            "name": "tagName",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
+    "/api/processing-core/contracts/{contractId}/custom-data": {
+      "post": {
+        "tags": [
+          "Custom Data"
+        ],
+        "summary": "Sets up a custom data for a specified contract",
+        "operationId": "SetContractCustomData",
+        "parameters": [
+          {
+            "name": "contractId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "pattern": "^-?(?:0|[1-9]\\d*)$",
+              "type": "integer",
+              "format": "int64"
+            }
+          },
+          {
+            "name": "idempotencyKey",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CustomDataTagsRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
+    "/api/processing-core/contracts/{contractId}/custom-data/{tagName}": {
+      "get": {
+        "tags": [
+          "Custom Data"
+        ],
+        "summary": "Retrieves selected custom data for a specified contract",
+        "operationId": "GetContractCustomData",
+        "parameters": [
+          {
+            "name": "contractId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "pattern": "^-?(?:0|[1-9]\\d*)$",
+              "type": "integer",
+              "format": "int64"
+            }
+          },
+          {
+            "name": "tagName",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
+    "/api/processing-core/contracts/{contractId}/parameters/{parameterCode}": {
+      "put": {
+        "tags": [
+          "Parameter"
+        ],
+        "summary": "Sets up or changes a contract's parameter value",
+        "operationId": "SetContractParameter",
+        "parameters": [
+          {
+            "name": "contractId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "pattern": "^-?(?:0|[1-9]\\d*)$",
+              "type": "integer",
+              "format": "int64"
+            }
+          },
+          {
+            "name": "parameterCode",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ParameterModificationRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
+    "/api/processing-core/contracts/{contractId}/parameters": {
+      "get": {
+        "tags": [
+          "Parameter"
+        ],
+        "summary": "Retrieves information about contract parameter(s)",
+        "operationId": "GetContractParameters",
+        "parameters": [
+          {
+            "name": "contractId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "pattern": "^-?(?:0|[1-9]\\d*)$",
+              "type": "integer",
+              "format": "int64"
+            }
+          },
+          {
+            "name": "parameterCodes",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
+    "/api/processing-core/contracts/{contractId}/debits": {
+      "post": {
+        "tags": [
+          "Transaction"
+        ],
+        "summary": "Posts debit transaction to a contract",
+        "operationId": "DebitContract",
+        "parameters": [
+          {
+            "name": "contractId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "pattern": "^-?(?:0|[1-9]\\d*)$",
+              "type": "integer",
+              "format": "int64"
+            }
+          },
+          {
+            "name": "idempotencyKey",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/TransactionContractDebitRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
+    "/api/processing-core/contracts/{contractId}/credits": {
+      "post": {
+        "tags": [
+          "Transaction"
+        ],
+        "summary": "Posts credit transaction to a contract",
+        "operationId": "CreditContract",
+        "parameters": [
+          {
+            "name": "contractId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "pattern": "^-?(?:0|[1-9]\\d*)$",
+              "type": "integer",
+              "format": "int64"
+            }
+          },
+          {
+            "name": "idempotencyKey",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/TransactionContractCreditRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
+    "/api/processing-core/contracts/{contractId}/charge-fees": {
+      "post": {
+        "tags": [
+          "Transaction"
+        ],
+        "summary": "Charges specified contract with a fee configured in the MP's CMS",
+        "operationId": "ChargeFee",
+        "parameters": [
+          {
+            "name": "contractId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "pattern": "^-?(?:0|[1-9]\\d*)$",
+              "type": "integer",
+              "format": "int64"
+            }
+          },
+          {
+            "name": "idempotencyKey",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ChargeFeeRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
+    "/api/processing-core/contracts/{contractId}/transactions": {
+      "get": {
+        "tags": [
+          "Transaction"
+        ],
+        "summary": "Retrieves transactions for a specified contract",
+        "operationId": "GetTransactions",
+        "parameters": [
+          {
+            "name": "contractId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "pattern": "^-?(?:0|[1-9]\\d*)$",
+              "type": "integer",
+              "format": "int64"
+            }
+          },
+          {
+            "name": "transactionDateFrom",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "transactionDateTo",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "transactionAuthorizationFilterMode",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "transactionAuthorized",
+            "in": "query",
+            "schema": {
+              "type": "boolean"
+            }
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "schema": {
+              "pattern": "^-?(?:0|[1-9]\\d*)$",
+              "type": [
+                "integer",
+                "string"
+              ],
+              "format": "int32"
+            }
+          },
+          {
+            "name": "offset",
+            "in": "query",
+            "schema": {
+              "pattern": "^-?(?:0|[1-9]\\d*)$",
+              "type": [
+                "integer",
+                "string"
+              ],
+              "format": "int32"
+            }
+          },
+          {
+            "name": "transactionTypeCodes",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
+    "/api/processing-core/contracts/{contractId}/transaction-documents": {
+      "get": {
+        "tags": [
+          "Transaction"
+        ],
+        "summary": "Retrieves transaction documents for a contract",
+        "operationId": "GetContractTransactionDocuments",
+        "parameters": [
+          {
+            "name": "contractId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "pattern": "^-?(?:0|[1-9]\\d*)$",
+              "type": "integer",
+              "format": "int64"
+            }
+          },
+          {
+            "name": "transactionDateFrom",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "transactionDateTo",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "transactionAuthorizationFilterMode",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "transactionCollectAuthorizations",
+            "in": "query",
+            "schema": {
+              "type": "boolean"
+            }
+          },
+          {
+            "name": "contractHierarchy",
+            "in": "query",
+            "schema": {
+              "type": "boolean"
+            }
+          },
+          {
+            "name": "direction",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "schema": {
+              "pattern": "^-?(?:0|[1-9]\\d*)$",
+              "type": [
+                "integer",
+                "string"
+              ],
+              "format": "int32"
+            }
+          },
+          {
+            "name": "offset",
+            "in": "query",
+            "schema": {
+              "pattern": "^-?(?:0|[1-9]\\d*)$",
+              "type": [
+                "integer",
+                "string"
+              ],
+              "format": "int32"
+            }
+          },
+          {
+            "name": "transactionTypeCodes",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
+    "/api/processing-core/transaction-documents": {
+      "get": {
+        "tags": [
+          "Transaction"
+        ],
+        "summary": "Retrieves transaction documents by ID, ARN, RRN or SRN",
+        "operationId": "GetTransactionDocuments",
+        "parameters": [
+          {
+            "name": "transactionSelectorType",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "transactionSelectorValue",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "schema": {
+              "pattern": "^-?(?:0|[1-9]\\d*)$",
+              "type": [
+                "integer",
+                "string"
+              ],
+              "format": "int32"
+            }
+          },
+          {
+            "name": "offset",
+            "in": "query",
+            "schema": {
+              "pattern": "^-?(?:0|[1-9]\\d*)$",
+              "type": [
+                "integer",
+                "string"
+              ],
+              "format": "int32"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
+    "/api/processing-core/transactions/{transactionId}/fees": {
+      "get": {
+        "tags": [
+          "Transaction"
+        ],
+        "summary": "Retrieves fees generated for a transaction",
+        "operationId": "GetTransactionFees",
+        "parameters": [
+          {
+            "name": "transactionId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "pattern": "^-?(?:0|[1-9]\\d*)$",
+              "type": "integer",
+              "format": "int64"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
+    "/api/processing-core/contracts/{contractId}/transactions/{transactionId}/releasing-blocked-funds": {
+      "put": {
+        "tags": [
+          "Transaction"
+        ],
+        "summary": "Releases funds of the pending transaction",
+        "operationId": "ReleaseBlockedFunds",
+        "parameters": [
+          {
+            "name": "contractId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "pattern": "^-?(?:0|[1-9]\\d*)$",
+              "type": "integer",
+              "format": "int64"
+            }
+          },
+          {
+            "name": "transactionId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "pattern": "^-?(?:0|[1-9]\\d*)$",
+              "type": "integer",
+              "format": "int64"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/BlockedFundsReleaseRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
+    "/api/processing-core/transactions/{transactionId}/reversals": {
+      "post": {
+        "tags": [
+          "Transaction"
+        ],
+        "summary": "Reverses selected transaction made by the Issuer",
+        "operationId": "ReverseTransaction",
+        "parameters": [
+          {
+            "name": "transactionId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "pattern": "^-?(?:0|[1-9]\\d*)$",
+              "type": "integer",
+              "format": "int64"
+            }
+          },
+          {
+            "name": "idempotencyKey",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ReverseTransactionReasonRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
+    "/api/processing-core/contracts/{contractId}/usage-limits/{usageLimitCode}": {
+      "put": {
+        "tags": [
+          "Usage limit"
+        ],
+        "summary": "Adds or updates a usage limit for a given contract",
+        "operationId": "SetUsageLimit",
+        "parameters": [
+          {
+            "name": "contractId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "pattern": "^-?(?:0|[1-9]\\d*)$",
+              "type": "integer",
+              "format": "int64"
+            }
+          },
+          {
+            "name": "usageLimitCode",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UsageLimitModificationRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
+    "/api/processing-core/contracts/{contractId}/usage-limits": {
+      "get": {
+        "tags": [
+          "Usage limit"
+        ],
+        "summary": "Retrieves a list of usage limits for a contract",
+        "operationId": "GetUsageLimits",
+        "parameters": [
+          {
+            "name": "contractId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "pattern": "^-?(?:0|[1-9]\\d*)$",
+              "type": "integer",
+              "format": "int64"
+            }
+          },
+          {
+            "name": "usageLimitCodes",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
+    "/api/processing-core/contracts/{contractId}/usage-limits/{usageLimitCode}/original-values": {
+      "put": {
+        "tags": [
+          "Usage limit"
+        ],
+        "summary": "Restores original values of a usage limit for a given contract",
+        "operationId": "RestoreUsageLimitOriginalValues",
+        "parameters": [
+          {
+            "name": "contractId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "pattern": "^-?(?:0|[1-9]\\d*)$",
+              "type": "integer",
+              "format": "int64"
+            }
+          },
+          {
+            "name": "usageLimitCode",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
+    "/api/processing-core/contracts/{contractId}/usage-limits/{usageLimitCode}/resetting-counters": {
+      "put": {
+        "tags": [
+          "Usage limit"
+        ],
+        "summary": "Resets counters for a specified usage limit for a given contract",
+        "operationId": "ResetUsageLimitCounters",
+        "parameters": [
+          {
+            "name": "contractId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "pattern": "^-?(?:0|[1-9]\\d*)$",
+              "type": "integer",
+              "format": "int64"
+            }
+          },
+          {
+            "name": "usageLimitCode",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UsageLimitResettingRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
+    "/api/processing-core/contracts/{contractId}/usage-limits/{usageLimitCode}/status": {
+      "put": {
+        "tags": [
+          "Usage limit"
+        ],
+        "summary": "Changes specified usage limit status for a given contract",
+        "operationId": "ChangeUsageLimitStatus",
+        "parameters": [
+          {
+            "name": "contractId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "pattern": "^-?(?:0|[1-9]\\d*)$",
+              "type": "integer",
+              "format": "int64"
+            }
+          },
+          {
+            "name": "usageLimitCode",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UsageLimitStatusRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
+    "/api/processing-core/contracts/{contractId}/service-limit-tariffs": {
+      "post": {
+        "tags": [
+          "Tariff"
+        ],
+        "summary": "Sets up an individual service limit tariff for the contract",
+        "operationId": "SetServiceLimitTariff",
+        "parameters": [
+          {
+            "name": "contractId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "pattern": "^-?(?:0|[1-9]\\d*)$",
+              "type": "integer",
+              "format": "int64"
+            }
+          },
+          {
+            "name": "idempotencyKey",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ServiceLimitTariffRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
+    "/api/processing-core/contracts/{contractId}/tariff-data": {
+      "get": {
+        "tags": [
+          "Tariff"
+        ],
+        "summary": "Retrieves information about tariff configuration for a contract",
+        "operationId": "GetContractTariffData",
+        "parameters": [
+          {
+            "name": "contractId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "pattern": "^-?(?:0|[1-9]\\d*)$",
+              "type": "integer",
+              "format": "int64"
+            }
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "schema": {
+              "pattern": "^-?(?:0|[1-9]\\d*)$",
+              "type": [
+                "integer",
+                "string"
+              ],
+              "format": "int32"
+            }
+          },
+          {
+            "name": "offset",
+            "in": "query",
+            "schema": {
+              "pattern": "^-?(?:0|[1-9]\\d*)$",
+              "type": [
+                "integer",
+                "string"
+              ],
+              "format": "int32"
+            }
+          },
+          {
+            "name": "personalisationType",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "tariffCode",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "tariffDomainCode",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "tariffRole",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "tariffTypeCode",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
+    "/api/processing-core/clients/searches": {
+      "post": {
+        "tags": [
+          "Search"
+        ],
+        "summary": "Returns clientId assigned to a given client identifier",
+        "operationId": "GetClientId",
+        "parameters": [
+          {
+            "name": "idempotencyKey",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ClientIdentifierSearchRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
+    "/api/processing-core/accounts/searches": {
+      "post": {
+        "tags": [
+          "Search"
+        ],
+        "summary": "Returns accountContractId assigned to a given account identifier",
+        "operationId": "GetAccountContractId",
+        "parameters": [
+          {
+            "name": "idempotencyKey",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AccountContractIdentifierSearchRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
+    "/api/processing-core/cards/searches": {
+      "post": {
+        "tags": [
+          "Search"
+        ],
+        "summary": "Returns cardContractId assigned to a given card contract identifier",
+        "operationId": "GetCardContractId",
+        "parameters": [
+          {
+            "name": "idempotencyKey",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CardContractIdentifierSearchRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
+    "/api/processing-core/public-keys": {
+      "get": {
+        "tags": [
+          "Security"
+        ],
+        "summary": "Retrieves MP's public RSA key",
+        "operationId": "GetPublicRsaKey",
+        "parameters": [
+          {
+            "name": "dateTypeToSecure",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "AccountContract": {
+        "required": [
+          "accountContractId",
+          "accountContractName",
+          "accountContractNumber",
+          "accountContractLevel",
+          "billingAccountContractId",
+          "billingAccountContractNumber",
+          "topAccountContractId",
+          "topAccountContractNumber",
+          "currency",
+          "productCode",
+          "productName",
+          "dateOpen",
+          "dateClose",
+          "accountContractStatusData",
+          "accountContractBalances",
+          "accountContractOwner"
+        ],
+        "type": "object",
+        "properties": {
+          "accountContractId": {
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "integer",
+              "string"
+            ],
+            "format": "int64"
+          },
+          "accountContractName": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "accountContractNumber": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "accountContractLevel": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "billingAccountContractId": {
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "integer",
+              "string"
+            ],
+            "format": "int64"
+          },
+          "billingAccountContractNumber": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "topAccountContractId": {
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "integer",
+              "string"
+            ],
+            "format": "int64"
+          },
+          "topAccountContractNumber": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "currency": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "productCode": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "productName": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "dateOpen": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "dateClose": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "accountContractStatusData": {
+            "oneOf": [
+              {
+                "type": "null"
+              },
+              {
+                "$ref": "#/components/schemas/AccountContractStatus"
+              }
+            ]
+          },
+          "accountContractBalances": {
+            "oneOf": [
+              {
+                "type": "null"
+              },
+              {
+                "$ref": "#/components/schemas/AccountContractBalances"
+              }
+            ]
+          },
+          "accountContractOwner": {
+            "oneOf": [
+              {
+                "type": "null"
+              },
+              {
+                "$ref": "#/components/schemas/AccountContractOwner"
+              }
+            ]
+          }
+        }
+      },
+      "AccountContractBalances": {
+        "required": [
+          "available",
+          "balance",
+          "blockedAmount",
+          "creditLimit",
+          "additionalLimit",
+          "pastDue",
+          "totalDue"
+        ],
+        "type": "object",
+        "properties": {
+          "available": {
+            "pattern": "^-?(?:0|[1-9]\\d*)(?:\\.\\d+)?$",
+            "type": [
+              "null",
+              "number",
+              "string"
+            ],
+            "format": "double"
+          },
+          "balance": {
+            "pattern": "^-?(?:0|[1-9]\\d*)(?:\\.\\d+)?$",
+            "type": [
+              "null",
+              "number",
+              "string"
+            ],
+            "format": "double"
+          },
+          "blockedAmount": {
+            "pattern": "^-?(?:0|[1-9]\\d*)(?:\\.\\d+)?$",
+            "type": [
+              "null",
+              "number",
+              "string"
+            ],
+            "format": "double"
+          },
+          "creditLimit": {
+            "pattern": "^-?(?:0|[1-9]\\d*)(?:\\.\\d+)?$",
+            "type": [
+              "null",
+              "number",
+              "string"
+            ],
+            "format": "double"
+          },
+          "additionalLimit": {
+            "pattern": "^-?(?:0|[1-9]\\d*)(?:\\.\\d+)?$",
+            "type": [
+              "null",
+              "number",
+              "string"
+            ],
+            "format": "double"
+          },
+          "pastDue": {
+            "pattern": "^-?(?:0|[1-9]\\d*)(?:\\.\\d+)?$",
+            "type": [
+              "null",
+              "number",
+              "string"
+            ],
+            "format": "double"
+          },
+          "totalDue": {
+            "pattern": "^-?(?:0|[1-9]\\d*)(?:\\.\\d+)?$",
+            "type": [
+              "null",
+              "number",
+              "string"
+            ],
+            "format": "double"
+          }
+        }
+      },
+      "AccountContractClassifierRequest": {
+        "required": [
+          "classifierCode",
+          "classifierValue"
+        ],
+        "type": "object",
+        "properties": {
+          "classifierCode": {
+            "type": "string"
+          },
+          "classifierValue": {
+            "type": "string"
+          }
+        }
+      },
+      "AccountContractCreationRequest": {
+        "required": [
+          "accountContractData",
+          "accountContractClassifiers",
+          "accountContractParameters",
+          "creditData",
+          "liabilityContract"
+        ],
+        "type": "object",
+        "properties": {
+          "accountContractData": {
+            "$ref": "#/components/schemas/AccountContractData"
+          },
+          "accountContractClassifiers": {
+            "type": [
+              "null",
+              "array"
+            ],
+            "items": {
+              "$ref": "#/components/schemas/AccountContractClassifierRequest"
+            }
+          },
+          "accountContractParameters": {
+            "type": [
+              "null",
+              "array"
+            ],
+            "items": {
+              "$ref": "#/components/schemas/AccountContractParameterRequest"
+            }
+          },
+          "creditData": {
+            "oneOf": [
+              {
+                "type": "null"
+              },
+              {
+                "$ref": "#/components/schemas/CreditData"
+              }
+            ]
+          },
+          "liabilityContract": {
+            "oneOf": [
+              {
+                "type": "null"
+              },
+              {
+                "$ref": "#/components/schemas/LiabilityContract"
+              }
+            ]
+          }
+        }
+      },
+      "AccountContractData": {
+        "required": [
+          "accountContractNumber",
+          "productCode",
+          "accountContractName",
+          "accountContractSubtypeCode",
+          "branchCode",
+          "cbsNumber",
+          "clientId",
+          "currency",
+          "parentAccountContractId",
+          "serviceGroupCode",
+          "customData"
+        ],
+        "type": "object",
+        "properties": {
+          "accountContractNumber": {
+            "type": "string"
+          },
+          "productCode": {
+            "type": "string"
+          },
+          "accountContractName": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "accountContractSubtypeCode": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "branchCode": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "cbsNumber": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "clientId": {
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "null",
+              "integer",
+              "string"
+            ],
+            "format": "int64"
+          },
+          "currency": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "parentAccountContractId": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "serviceGroupCode": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "customData": {
+            "type": [
+              "null",
+              "array"
+            ],
+            "items": {
+              "$ref": "#/components/schemas/CustomDataTag"
+            }
+          }
+        }
+      },
+      "AccountContractIdentifierRequest": {
+        "required": [
+          "accountContractId"
+        ],
+        "type": "object",
+        "properties": {
+          "accountContractId": {
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "integer",
+              "string"
+            ],
+            "format": "int64"
+          }
+        }
+      },
+      "AccountContractIdentifierSearchRequest": {
+        "required": [
+          "accountContractIdentifier",
+          "accountContractIdentifierType"
+        ],
+        "type": "object",
+        "properties": {
+          "accountContractIdentifier": {
+            "type": "string"
+          },
+          "accountContractIdentifierType": {
+            "type": "string"
+          }
+        }
+      },
+      "AccountContractIdentifierWithClientIdentifierRequest": {
+        "required": [
+          "accountContractId",
+          "clientId"
+        ],
+        "type": "object",
+        "properties": {
+          "accountContractId": {
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "integer",
+              "string"
+            ],
+            "format": "int64"
+          },
+          "clientId": {
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "null",
+              "integer",
+              "string"
+            ],
+            "format": "int64"
+          }
+        }
+      },
+      "AccountContractModificationRequest": {
+        "required": [
+          "accountContractName",
+          "cbsNumber",
+          "customData"
+        ],
+        "type": "object",
+        "properties": {
+          "accountContractName": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "cbsNumber": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "customData": {
+            "type": [
+              "null",
+              "array"
+            ],
+            "items": {
+              "$ref": "#/components/schemas/CustomDataTag"
+            }
+          }
+        }
+      },
+      "AccountContractOwner": {
+        "required": [
+          "accountContractOwnerId",
+          "accountContractOwnerNumber",
+          "accountContractOwnerName"
+        ],
+        "type": "object",
+        "properties": {
+          "accountContractOwnerId": {
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "null",
+              "integer",
+              "string"
+            ],
+            "format": "int64"
+          },
+          "accountContractOwnerNumber": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "accountContractOwnerName": {
+            "type": [
+              "null",
+              "string"
+            ]
+          }
+        }
+      },
+      "AccountContractParameterRequest": {
+        "required": [
+          "parameterCode",
+          "parameterValue"
+        ],
+        "type": "object",
+        "properties": {
+          "parameterCode": {
+            "type": "string"
+          },
+          "parameterValue": {
+            "type": [
+              "null",
+              "string"
+            ]
+          }
+        }
+      },
+      "AccountContractsResponse": {
+        "required": [
+          "count",
+          "limit",
+          "offset",
+          "total",
+          "clientAccountContracts"
+        ],
+        "type": "object",
+        "properties": {
+          "count": {
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "integer",
+              "string"
+            ],
+            "format": "int32"
+          },
+          "limit": {
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "integer",
+              "string"
+            ],
+            "format": "int32"
+          },
+          "offset": {
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "integer",
+              "string"
+            ],
+            "format": "int32"
+          },
+          "total": {
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "integer",
+              "string"
+            ],
+            "format": "int32"
+          },
+          "clientAccountContracts": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/AccountContract"
+            }
+          }
+        }
+      },
+      "AccountContractStatus": {
+        "required": [
+          "statusCode",
+          "statusName",
+          "externalStatusCode",
+          "externalStatusName"
+        ],
+        "type": "object",
+        "properties": {
+          "statusCode": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "statusName": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "externalStatusCode": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "externalStatusName": {
+            "type": [
+              "null",
+              "string"
+            ]
+          }
+        }
+      },
+      "AccountContractStatusWithReasonRequest": {
+        "required": [
+          "statusCode",
+          "reason"
+        ],
+        "type": "object",
+        "properties": {
+          "statusCode": {
+            "type": "string"
+          },
+          "reason": {
+            "type": [
+              "null",
+              "string"
+            ]
+          }
+        }
+      },
+      "AddressCreationRequest": {
+        "required": [
+          "addressType",
+          "addressLine1",
+          "addressLine2",
+          "addressLine3",
+          "addressLine4",
+          "city",
+          "country",
+          "postalCode",
+          "state"
+        ],
+        "type": "object",
+        "properties": {
+          "addressType": {
+            "type": "string"
+          },
+          "addressLine1": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "addressLine2": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "addressLine3": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "addressLine4": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "city": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "country": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "postalCode": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "state": {
+            "type": [
+              "null",
+              "string"
+            ]
+          }
+        }
+      },
+      "AddressModificationRequest": {
+        "required": [
+          "enabled",
+          "addressLine1",
+          "addressLine2",
+          "addressLine3",
+          "addressLine4",
+          "city",
+          "country",
+          "postalCode",
+          "state"
+        ],
+        "type": "object",
+        "properties": {
+          "enabled": {
+            "type": [
+              "null",
+              "boolean"
+            ]
+          },
+          "addressLine1": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "addressLine2": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "addressLine3": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "addressLine4": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "city": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "country": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "postalCode": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "state": {
+            "type": [
+              "null",
+              "string"
+            ]
+          }
+        }
+      },
+      "AuthenticationMethodRequest": {
+        "required": [
+          "authenticationTypeCode",
+          "authenticationTypeName",
+          "authenticationParameters"
+        ],
+        "type": "object",
+        "properties": {
+          "authenticationTypeCode": {
+            "type": "string"
+          },
+          "authenticationTypeName": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "authenticationParameters": {
+            "type": [
+              "null",
+              "array"
+            ],
+            "items": {
+              "$ref": "#/components/schemas/AuthenticationParameter"
+            }
+          }
+        }
+      },
+      "AuthenticationParameter": {
+        "required": [
+          "name",
+          "value"
+        ],
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string"
+          },
+          "value": {
+            "type": [
+              "null",
+              "string"
+            ]
+          }
+        }
+      },
+      "BlockedFundsReleaseRequest": {
+        "required": [
+          "reason"
+        ],
+        "type": "object",
+        "properties": {
+          "reason": {
+            "type": [
+              "null",
+              "string"
+            ]
+          }
+        }
+      },
+      "CardContractCreationRequest": {
+        "required": [
+          "accountContractId",
+          "cardContract",
+          "clientId",
+          "cardContractCustomData"
+        ],
+        "type": "object",
+        "properties": {
+          "accountContractId": {
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "integer",
+              "string"
+            ],
+            "format": "int64"
+          },
+          "cardContract": {
+            "$ref": "#/components/schemas/CardContractData"
+          },
+          "clientId": {
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "null",
+              "integer",
+              "string"
+            ],
+            "format": "int64"
+          },
+          "cardContractCustomData": {
+            "type": [
+              "null",
+              "array"
+            ],
+            "items": {
+              "$ref": "#/components/schemas/CustomDataTag"
+            }
+          }
+        }
+      },
+      "CardContractData": {
+        "required": [
+          "productCode",
+          "branchCode",
+          "cardContractNumber",
+          "cardContractName",
+          "cardSubtypeCode",
+          "cbsNumber",
+          "currency",
+          "cardExpiryDate",
+          "productionCode",
+          "embossedData"
+        ],
+        "type": "object",
+        "properties": {
+          "productCode": {
+            "type": "string"
+          },
+          "branchCode": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "cardContractNumber": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "cardContractName": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "cardSubtypeCode": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "cbsNumber": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "currency": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "cardExpiryDate": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "productionCode": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "embossedData": {
+            "oneOf": [
+              {
+                "type": "null"
+              },
+              {
+                "$ref": "#/components/schemas/EmbossedData"
+              }
+            ]
+          }
+        }
+      },
+      "CardContractDetailsVerificationRequest": {
+        "required": [
+          "cardContractNumber",
+          "cardExpiryDate",
+          "cardVerificationCode"
+        ],
+        "type": "object",
+        "properties": {
+          "cardContractNumber": {
+            "type": "string"
+          },
+          "cardExpiryDate": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "cardVerificationCode": {
+            "type": [
+              "null",
+              "string"
+            ]
+          }
+        }
+      },
+      "CardContractIdentifierSearchRequest": {
+        "required": [
+          "cardContractIdentifier",
+          "cardContractIdentifierType"
+        ],
+        "type": "object",
+        "properties": {
+          "cardContractIdentifier": {
+            "type": "string"
+          },
+          "cardContractIdentifierType": {
+            "type": "string"
+          }
+        }
+      },
+      "CardContractModificationRequest": {
+        "required": [
+          "cardContractName",
+          "cbsNumber",
+          "cardContractCustomData",
+          "embossedData"
+        ],
+        "type": "object",
+        "properties": {
+          "cardContractName": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "cbsNumber": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "cardContractCustomData": {
+            "type": [
+              "null",
+              "array"
+            ],
+            "items": {
+              "$ref": "#/components/schemas/CustomDataTag"
+            }
+          },
+          "embossedData": {
+            "oneOf": [
+              {
+                "type": "null"
+              },
+              {
+                "$ref": "#/components/schemas/EmbossedData"
+              }
+            ]
+          }
+        }
+      },
+      "CardContractReissueRequest": {
+        "required": [
+          "reissueType",
+          "newCardContractNumber",
+          "newCardExpiryDate",
+          "newCbsNumber"
+        ],
+        "type": "object",
+        "properties": {
+          "reissueType": {
+            "type": "string"
+          },
+          "newCardContractNumber": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "newCardExpiryDate": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "newCbsNumber": {
+            "type": [
+              "null",
+              "string"
+            ]
+          }
+        }
+      },
+      "CardContractStatusWithReasonRequest": {
+        "required": [
+          "statusCode",
+          "reason"
+        ],
+        "type": "object",
+        "properties": {
+          "statusCode": {
+            "type": "string"
+          },
+          "reason": {
+            "type": [
+              "null",
+              "string"
+            ]
+          }
+        }
+      },
+      "ChargeFeeRequest": {
+        "required": [
+          "feeTypeId",
+          "uniqueReferenceNumber",
+          "amount",
+          "currency",
+          "postingDate"
+        ],
+        "type": "object",
+        "properties": {
+          "feeTypeId": {
+            "type": "string"
+          },
+          "uniqueReferenceNumber": {
+            "type": "string"
+          },
+          "amount": {
+            "pattern": "^-?(?:0|[1-9]\\d*)(?:\\.\\d+)?$",
+            "type": [
+              "null",
+              "number",
+              "string"
+            ],
+            "format": "double"
+          },
+          "currency": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "postingDate": {
+            "type": [
+              "null",
+              "string"
+            ]
+          }
+        }
+      },
+      "ClassifierCreationRequest": {
+        "required": [
+          "classifierValue",
+          "startDate",
+          "endDate"
+        ],
+        "type": "object",
+        "properties": {
+          "classifierValue": {
+            "type": "string"
+          },
+          "startDate": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "endDate": {
+            "type": [
+              "null",
+              "string"
+            ]
+          }
+        }
+      },
+      "ClientBaseAddressData": {
+        "required": [
+          "addressLine1",
+          "addressLine2",
+          "addressLine3",
+          "addressLine4",
+          "city",
+          "country",
+          "postalCode",
+          "state"
+        ],
+        "type": "object",
+        "properties": {
+          "addressLine1": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "addressLine2": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "addressLine3": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "addressLine4": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "city": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "country": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "postalCode": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "state": {
+            "type": [
+              "null",
+              "string"
+            ]
+          }
+        }
+      },
+      "ClientCompanyData": {
+        "required": [
+          "companyDepartment",
+          "companyName",
+          "companyTradeName",
+          "position"
+        ],
+        "type": "object",
+        "properties": {
+          "companyDepartment": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "companyName": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "companyTradeName": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "position": {
+            "type": [
+              "null",
+              "string"
+            ]
+          }
+        }
+      },
+      "ClientContactData": {
+        "required": [
+          "email",
+          "fax",
+          "faxHome",
+          "phoneNumberHome",
+          "phoneNumberMobile",
+          "phoneNumberWork"
+        ],
+        "type": "object",
+        "properties": {
+          "email": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "fax": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "faxHome": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "phoneNumberHome": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "phoneNumberMobile": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "phoneNumberWork": {
+            "type": [
+              "null",
+              "string"
+            ]
+          }
+        }
+      },
+      "ClientCreationRequest": {
+        "required": [
+          "clientNumber",
+          "clientType",
+          "orderDepartment",
+          "serviceGroupCode",
+          "clientCustomData",
+          "additionalDate01",
+          "additionalDate02",
+          "clientExpiryDate",
+          "clientBaseAddressData",
+          "clientCompanyData",
+          "clientContactData",
+          "clientIdentificationData",
+          "clientPersonalData",
+          "embossedData"
+        ],
+        "type": "object",
+        "properties": {
+          "clientNumber": {
+            "type": "string"
+          },
+          "clientType": {
+            "type": "string"
+          },
+          "orderDepartment": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "serviceGroupCode": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "clientCustomData": {
+            "type": [
+              "null",
+              "array"
+            ],
+            "items": {
+              "$ref": "#/components/schemas/CustomDataTag"
+            }
+          },
+          "additionalDate01": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "additionalDate02": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "clientExpiryDate": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "clientBaseAddressData": {
+            "oneOf": [
+              {
+                "type": "null"
+              },
+              {
+                "$ref": "#/components/schemas/ClientBaseAddressData"
+              }
+            ]
+          },
+          "clientCompanyData": {
+            "oneOf": [
+              {
+                "type": "null"
+              },
+              {
+                "$ref": "#/components/schemas/ClientCompanyData"
+              }
+            ]
+          },
+          "clientContactData": {
+            "oneOf": [
+              {
+                "type": "null"
+              },
+              {
+                "$ref": "#/components/schemas/ClientContactData"
+              }
+            ]
+          },
+          "clientIdentificationData": {
+            "oneOf": [
+              {
+                "type": "null"
+              },
+              {
+                "$ref": "#/components/schemas/ClientIdentificationData"
+              }
+            ]
+          },
+          "clientPersonalData": {
+            "oneOf": [
+              {
+                "type": "null"
+              },
+              {
+                "$ref": "#/components/schemas/ClientPersonalData"
+              }
+            ]
+          },
+          "embossedData": {
+            "oneOf": [
+              {
+                "type": "null"
+              },
+              {
+                "$ref": "#/components/schemas/EmbossedData"
+              }
+            ]
+          }
+        }
+      },
+      "ClientIdentificationData": {
+        "required": [
+          "identificationDocumentNumber",
+          "identificationDocumentType",
+          "socialNumber",
+          "taxpayerIdentifier"
+        ],
+        "type": "object",
+        "properties": {
+          "identificationDocumentNumber": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "identificationDocumentType": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "socialNumber": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "taxpayerIdentifier": {
+            "type": [
+              "null",
+              "string"
+            ]
+          }
+        }
+      },
+      "ClientIdentifierSearchRequest": {
+        "required": [
+          "clientIdentifier",
+          "clientIdentifierType"
+        ],
+        "type": "object",
+        "properties": {
+          "clientIdentifier": {
+            "type": "string"
+          },
+          "clientIdentifierType": {
+            "type": "string"
+          }
+        }
+      },
+      "ClientIdentifierWithRelinkTypeRequest": {
+        "required": [
+          "clientId",
+          "relinkType"
+        ],
+        "type": "object",
+        "properties": {
+          "clientId": {
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "integer",
+              "string"
+            ],
+            "format": "int64"
+          },
+          "relinkType": {
+            "type": [
+              "null",
+              "string"
+            ]
+          }
+        }
+      },
+      "ClientModificationRequest": {
+        "required": [
+          "clientCustomData",
+          "additionalDate01",
+          "additionalDate02",
+          "clientExpiryDate",
+          "clientBaseAddressData",
+          "clientCompanyData",
+          "clientContactData",
+          "clientIdentificationData",
+          "clientPersonalData",
+          "embossedData"
+        ],
+        "type": "object",
+        "properties": {
+          "clientCustomData": {
+            "type": [
+              "null",
+              "array"
+            ],
+            "items": {
+              "$ref": "#/components/schemas/CustomDataTag"
+            }
+          },
+          "additionalDate01": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "additionalDate02": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "clientExpiryDate": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "clientBaseAddressData": {
+            "oneOf": [
+              {
+                "type": "null"
+              },
+              {
+                "$ref": "#/components/schemas/ClientBaseAddressData"
+              }
+            ]
+          },
+          "clientCompanyData": {
+            "oneOf": [
+              {
+                "type": "null"
+              },
+              {
+                "$ref": "#/components/schemas/ClientCompanyData"
+              }
+            ]
+          },
+          "clientContactData": {
+            "oneOf": [
+              {
+                "type": "null"
+              },
+              {
+                "$ref": "#/components/schemas/ClientContactData"
+              }
+            ]
+          },
+          "clientIdentificationData": {
+            "oneOf": [
+              {
+                "type": "null"
+              },
+              {
+                "$ref": "#/components/schemas/ClientIdentificationData"
+              }
+            ]
+          },
+          "clientPersonalData": {
+            "oneOf": [
+              {
+                "type": "null"
+              },
+              {
+                "$ref": "#/components/schemas/ClientPersonalData"
+              }
+            ]
+          },
+          "embossedData": {
+            "oneOf": [
+              {
+                "type": "null"
+              },
+              {
+                "$ref": "#/components/schemas/EmbossedData"
+              }
+            ]
+          }
+        }
+      },
+      "ClientPersonalData": {
+        "required": [
+          "firstName",
+          "lastName",
+          "middleName",
+          "dateOfBirth",
+          "gender",
+          "nationality"
+        ],
+        "type": "object",
+        "properties": {
+          "firstName": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "lastName": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "middleName": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "dateOfBirth": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "gender": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "nationality": {
+            "type": [
+              "null",
+              "string"
+            ]
+          }
+        }
+      },
+      "ContractBalance": {
+        "required": [
+          "balanceCode",
+          "balanceCurrency",
+          "balanceId",
+          "balanceValue"
+        ],
+        "type": "object",
+        "properties": {
+          "balanceCode": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "balanceCurrency": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "balanceId": {
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "integer",
+              "string"
+            ],
+            "format": "int64"
+          },
+          "balanceValue": {
+            "pattern": "^-?(?:0|[1-9]\\d*)(?:\\.\\d+)?$",
+            "type": [
+              "number",
+              "string"
+            ],
+            "format": "double"
+          }
+        }
+      },
+      "ContractBalancesResponse": {
+        "required": [
+          "contractBalances"
+        ],
+        "type": "object",
+        "properties": {
+          "contractBalances": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ContractBalance"
+            }
+          }
+        }
+      },
+      "CreditData": {
+        "required": [
+          "billingDay",
+          "creditLimitAmount"
+        ],
+        "type": "object",
+        "properties": {
+          "billingDay": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "creditLimitAmount": {
+            "pattern": "^-?(?:0|[1-9]\\d*)(?:\\.\\d+)?$",
+            "type": [
+              "null",
+              "number",
+              "string"
+            ],
+            "format": "double"
+          }
+        }
+      },
+      "CustomDataTag": {
+        "required": [
+          "removeTag",
+          "tagContainer",
+          "tagName",
+          "tagValue"
+        ],
+        "type": "object",
+        "properties": {
+          "removeTag": {
+            "type": [
+              "null",
+              "boolean"
+            ]
+          },
+          "tagContainer": {
+            "type": "string"
+          },
+          "tagName": {
+            "type": "string"
+          },
+          "tagValue": {
+            "type": [
+              "null",
+              "string"
+            ]
+          }
+        }
+      },
+      "CustomDataTagsRequest": {
+        "required": [
+          "customDataTags"
+        ],
+        "type": "object",
+        "properties": {
+          "customDataTags": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/CustomDataTag"
+            }
+          }
+        }
+      },
+      "CvcVerificationRequest": {
+        "required": [
+          "cardExpiryDate",
+          "cardVerificationCode"
+        ],
+        "type": "object",
+        "properties": {
+          "cardExpiryDate": {
+            "type": "string"
+          },
+          "cardVerificationCode": {
+            "type": "string"
+          }
+        }
+      },
+      "EmbossedData": {
+        "required": [
+          "companyName",
+          "firstName",
+          "lastName",
+          "title"
+        ],
+        "type": "object",
+        "properties": {
+          "companyName": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "firstName": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "lastName": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "title": {
+            "type": [
+              "null",
+              "string"
+            ]
+          }
+        }
+      },
+      "EventRequest": {
+        "required": [
+          "eventCode",
+          "amount",
+          "currency",
+          "parameterString",
+          "reason",
+          "startDate",
+          "endDate"
+        ],
+        "type": "object",
+        "properties": {
+          "eventCode": {
+            "type": "string"
+          },
+          "amount": {
+            "pattern": "^-?(?:0|[1-9]\\d*)(?:\\.\\d+)?$",
+            "type": [
+              "null",
+              "number",
+              "string"
+            ],
+            "format": "double"
+          },
+          "currency": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "parameterString": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "reason": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "startDate": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "endDate": {
+            "type": [
+              "null",
+              "string"
+            ]
+          }
+        }
+      },
+      "LiabilityContract": {
+        "required": [
+          "liabilityContractId",
+          "liabilityCategory"
+        ],
+        "type": "object",
+        "properties": {
+          "liabilityContractId": {
+            "type": "string"
+          },
+          "liabilityCategory": {
+            "type": "string"
+          }
+        }
+      },
+      "ParameterModificationRequest": {
+        "required": [
+          "parameterValue"
+        ],
+        "type": "object",
+        "properties": {
+          "parameterValue": {
+            "type": "string"
+          }
+        }
+      },
+      "PinCreationRequest": {
+        "required": [
+          "cardExpiryDate",
+          "cardSequenceNumber",
+          "newPinBlock"
+        ],
+        "type": "object",
+        "properties": {
+          "cardExpiryDate": {
+            "type": "string"
+          },
+          "cardSequenceNumber": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "newPinBlock": {
+            "type": "string"
+          }
+        }
+      },
+      "PinVerificationRequest": {
+        "required": [
+          "cardExpiryDate",
+          "cardSequenceNumber",
+          "pinBlock"
+        ],
+        "type": "object",
+        "properties": {
+          "cardExpiryDate": {
+            "type": "string"
+          },
+          "cardSequenceNumber": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "pinBlock": {
+            "type": "string"
+          }
+        }
+      },
+      "ReverseTransactionReasonRequest": {
+        "required": [
+          "reason"
+        ],
+        "type": "object",
+        "properties": {
+          "reason": {
+            "type": [
+              "null",
+              "string"
+            ]
+          }
+        }
+      },
+      "ServiceLimitTariffRequest": {
+        "required": [
+          "tariffCode",
+          "currency",
+          "startDate",
+          "endDate",
+          "floorLimit",
+          "minTransactionAmount",
+          "maxTransactionAmount"
+        ],
+        "type": "object",
+        "properties": {
+          "tariffCode": {
+            "type": "string"
+          },
+          "currency": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "startDate": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "endDate": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "floorLimit": {
+            "pattern": "^-?(?:0|[1-9]\\d*)(?:\\.\\d+)?$",
+            "type": [
+              "null",
+              "number",
+              "string"
+            ],
+            "format": "double"
+          },
+          "minTransactionAmount": {
+            "pattern": "^-?(?:0|[1-9]\\d*)(?:\\.\\d+)?$",
+            "type": [
+              "null",
+              "number",
+              "string"
+            ],
+            "format": "double"
+          },
+          "maxTransactionAmount": {
+            "pattern": "^-?(?:0|[1-9]\\d*)(?:\\.\\d+)?$",
+            "type": [
+              "null",
+              "number",
+              "string"
+            ],
+            "format": "double"
+          }
+        }
+      },
+      "TransactionContractCreditRequest": {
+        "required": [
+          "transactionTypeCode",
+          "amount",
+          "currency",
+          "description",
+          "feeCode",
+          "postingDate",
+          "transactionTypeExtension",
+          "uniqueReferenceNumber",
+          "customData"
+        ],
+        "type": "object",
+        "properties": {
+          "transactionTypeCode": {
+            "type": "string"
+          },
+          "amount": {
+            "pattern": "^-?(?:0|[1-9]\\d*)(?:\\.\\d+)?$",
+            "type": [
+              "number",
+              "string"
+            ],
+            "format": "double"
+          },
+          "currency": {
+            "type": "string"
+          },
+          "description": {
+            "type": "string"
+          },
+          "feeCode": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "postingDate": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "transactionTypeExtension": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "uniqueReferenceNumber": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "customData": {
+            "type": [
+              "null",
+              "array"
+            ],
+            "items": {
+              "$ref": "#/components/schemas/TransactionCustomData"
+            }
+          }
+        }
+      },
+      "TransactionContractDebitRequest": {
+        "required": [
+          "transactionTypeCode",
+          "amount",
+          "currency",
+          "description",
+          "feeCode",
+          "postingDate",
+          "transactionTypeExtension",
+          "uniqueReferenceNumber",
+          "customData"
+        ],
+        "type": "object",
+        "properties": {
+          "transactionTypeCode": {
+            "type": "string"
+          },
+          "amount": {
+            "pattern": "^-?(?:0|[1-9]\\d*)(?:\\.\\d+)?$",
+            "type": [
+              "number",
+              "string"
+            ],
+            "format": "double"
+          },
+          "currency": {
+            "type": "string"
+          },
+          "description": {
+            "type": "string"
+          },
+          "feeCode": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "postingDate": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "transactionTypeExtension": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "uniqueReferenceNumber": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "customData": {
+            "type": [
+              "null",
+              "array"
+            ],
+            "items": {
+              "$ref": "#/components/schemas/TransactionCustomData"
+            }
+          }
+        }
+      },
+      "TransactionCustomData": {
+        "required": [
+          "tagName",
+          "tagValue"
+        ],
+        "type": "object",
+        "properties": {
+          "tagName": {
+            "type": "string"
+          },
+          "tagValue": {
+            "type": "string"
+          }
+        }
+      },
+      "UsageLimitModificationRequest": {
+        "required": [
+          "activityPeriodStartDate",
+          "activityPeriodEndDate",
+          "addInfo",
+          "currency",
+          "maxAmount",
+          "maxNumber",
+          "maxPercent",
+          "maxSingleAmount"
+        ],
+        "type": "object",
+        "properties": {
+          "activityPeriodStartDate": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "activityPeriodEndDate": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "addInfo": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "currency": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "maxAmount": {
+            "pattern": "^-?(?:0|[1-9]\\d*)(?:\\.\\d+)?$",
+            "type": [
+              "null",
+              "number",
+              "string"
+            ],
+            "format": "double"
+          },
+          "maxNumber": {
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "null",
+              "integer",
+              "string"
+            ],
+            "format": "int64"
+          },
+          "maxPercent": {
+            "pattern": "^-?(?:0|[1-9]\\d*)(?:\\.\\d+)?$",
+            "type": [
+              "null",
+              "number",
+              "string"
+            ],
+            "format": "double"
+          },
+          "maxSingleAmount": {
+            "pattern": "^-?(?:0|[1-9]\\d*)(?:\\.\\d+)?$",
+            "type": [
+              "null",
+              "number",
+              "string"
+            ],
+            "format": "double"
+          }
+        }
+      },
+      "UsageLimitResettingRequest": {
+        "required": [
+          "reset"
+        ],
+        "type": "object",
+        "properties": {
+          "reset": {
+            "type": "boolean"
+          }
+        }
+      },
+      "UsageLimitStatusRequest": {
+        "required": [
+          "status"
+        ],
+        "type": "object",
+        "properties": {
+          "status": {
+            "type": "string"
+          }
+        }
+      }
+    }
+  },
+  "tags": [
+    {
+      "name": "Mastercard Processing Core"
+    },
+    {
+      "name": "Client"
+    },
+    {
+      "name": "Contract"
+    },
+    {
+      "name": "Account contract"
+    },
+    {
+      "name": "Card contract"
+    },
+    {
+      "name": "Card plastic"
+    },
+    {
+      "name": "Address"
+    },
+    {
+      "name": "Classifier"
+    },
+    {
+      "name": "Custom Data"
+    },
+    {
+      "name": "Parameter"
+    },
+    {
+      "name": "Transaction"
+    },
+    {
+      "name": "Usage limit"
+    },
+    {
+      "name": "Tariff"
+    },
+    {
+      "name": "Search"
+    },
+    {
+      "name": "Security"
+    }
+  ]
+}

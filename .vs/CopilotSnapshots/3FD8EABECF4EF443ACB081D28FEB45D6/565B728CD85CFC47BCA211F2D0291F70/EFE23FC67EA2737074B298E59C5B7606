@@ -1,0 +1,228 @@
+﻿using Mastercard.Developer.OAuth1Signer.Core.Signers;
+using Mastercard.Developer.OAuth1Signer.Core.Utils;
+using Microsoft.AspNetCore.Diagnostics;
+using Microsoft.Extensions.Options;
+using System.Text.Json;
+using Unico.Mastercard.Api.Client;
+using Unico.Mastercard.Api.Configuration;
+using Unico.Mastercard.Api.Models;
+
+var builder = WebApplication.CreateBuilder(args);
+
+builder.Services.AddOpenApi();
+
+builder.Services
+    .AddOptions<MastercardOptions>()
+    .Bind(builder.Configuration.GetSection(MastercardOptions.SectionName));
+
+var mastercardOptions = builder.Configuration
+    .GetSection(MastercardOptions.SectionName)
+    .Get<MastercardOptions>() ?? new MastercardOptions();
+
+if (mastercardOptions.UseMock)
+{
+    builder.Services.AddSingleton<IProcessingCoreClient, MockProcessingCoreClient>();
+}
+else
+{
+    // Signing key is loaded once and reused for every outgoing request.
+    builder.Services.AddSingleton(sp =>
+    {
+        var options = sp.GetRequiredService<IOptions<MastercardOptions>>().Value;
+        var signingKey = AuthenticationUtils.LoadSigningKey(
+            options.SigningKeyPath, options.SigningKeyAlias, options.SigningKeyPassword);
+        return new NetHttpClientSigner(options.ConsumerKey, signingKey);
+    });
+    builder.Services.AddTransient<OAuth1SigningHandler>();
+    builder.Services
+        .AddHttpClient<IProcessingCoreClient, ProcessingCoreClient>((sp, client) =>
+        {
+            var options = sp.GetRequiredService<IOptions<MastercardOptions>>().Value;
+            client.BaseAddress = new Uri(options.BaseUrl);
+        })
+        .AddHttpMessageHandler<OAuth1SigningHandler>();
+}
+
+var app = builder.Build();
+
+app.MapOpenApi();
+app.UseSwaggerUI(options =>
+{
+    options.SwaggerEndpoint("/openapi/v1.json", "Mastercard Processing Core (Unico wrapper) v1");
+    options.RoutePrefix = "swagger";
+});
+
+app.UseExceptionHandler(errorApp => errorApp.Run(async context =>
+{
+    var exception = context.Features.Get<IExceptionHandlerFeature>()?.Error;
+
+    var (statusCode, title, detail) = exception switch
+    {
+        MastercardApiException mex => (
+            mex.StatusCode is >= 400 and < 600 ? mex.StatusCode : StatusCodes.Status502BadGateway,
+            "Mastercard Processing Core API error",
+            mex.ResponseBody),
+        _ => (StatusCodes.Status500InternalServerError, "Unexpected error", exception?.Message)
+    };
+
+    context.Response.StatusCode = statusCode;
+    await Results.Problem(title: title, detail: detail, statusCode: statusCode).ExecuteAsync(context);
+}));
+
+app.UseHttpsRedirection();
+
+var api = app.MapGroup("/api/processing-core").WithTags("Mastercard Processing Core");
+
+api.MapGet("/clients/{clientId}/account-contracts", async (
+        string clientId, IProcessingCoreClient client, CancellationToken cancellationToken, int offset = 0, int limit = 10) =>
+    {
+        var result = await client.GetAccountContractsAsync(clientId, offset, limit, cancellationToken);
+        return Results.Ok(result);
+    })
+    .WithName("GetAccountContracts")
+    .WithSummary("Retrieve a list of account contracts for a client")
+    .Produces<AccountContractsResponse>();
+
+api.MapGet("/contracts/{contractId}/balances", async (
+        string contractId, string balanceCodes, IProcessingCoreClient client, CancellationToken cancellationToken) =>
+    {
+        var codes = balanceCodes.Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
+        var result = await client.GetContractBalancesAsync(contractId, codes, cancellationToken);
+        return Results.Ok(result);
+    })
+    .WithName("GetContractBalances")
+    .WithSummary("Retrieve balances for an account or card contract")
+    .Produces<ContractBalancesResponse>();
+
+// Generic pass-through proxy for the remaining Processing Core operations from oas_core.yaml.
+// These forward path/query/body to the client as plain JSON. Operations marked
+// 'x-mastercard-api-encrypted: true' in the spec are NOT JWE-encrypted/decrypted here.
+var proxyRoutes = new (HttpMethod Method, string Template)[]
+{
+    (HttpMethod.Post, "/clients"),
+    (HttpMethod.Get, "/clients/{client_id}"),
+    (HttpMethod.Patch, "/clients/{client_id}"),
+    (HttpMethod.Get, "/clients/{client_id}/card-contracts"),
+    (HttpMethod.Post, "/contracts/{contract_id}/events"),
+    (HttpMethod.Get, "/contracts/{contract_id}/financials"),
+    (HttpMethod.Get, "/contracts/{contract_id}/technical-accounts"),
+    (HttpMethod.Get, "/contracts/{contract_id}/tree-summaries"),
+    (HttpMethod.Post, "/accounts"),
+    (HttpMethod.Get, "/accounts/{account_contract_id}"),
+    (HttpMethod.Patch, "/accounts/{account_contract_id}"),
+    (HttpMethod.Put, "/accounts/{account_contract_id}/status"),
+    (HttpMethod.Get, "/accounts/{account_contract_id}/statuses"),
+    (HttpMethod.Put, "/accounts/{account_contract_id}/client-identifier"),
+    (HttpMethod.Put, "/contracts/{contract_id}/main-contract"),
+    (HttpMethod.Get, "/accounts/{account_contract_id}/sub-accounts"),
+    (HttpMethod.Get, "/accounts/{account_contract_id}/card-contracts"),
+    (HttpMethod.Post, "/cards"),
+    (HttpMethod.Get, "/cards/{card_contract_id}"),
+    (HttpMethod.Patch, "/cards/{card_contract_id}"),
+    (HttpMethod.Post, "/cards/details-verifications"),
+    (HttpMethod.Put, "/cards/{card_contract_id}/status"),
+    (HttpMethod.Get, "/cards/{card_contract_id}/statuses"),
+    (HttpMethod.Put, "/cards/{card_contract_id}/client-identifier"),
+    (HttpMethod.Put, "/cards/{card_contract_id}/main-contract"),
+    (HttpMethod.Put, "/cards/{card_contract_id}/online-pin-attempts-counter"),
+    (HttpMethod.Put, "/clients/{client_id}/online-pin-attempts-counter"),
+    (HttpMethod.Put, "/cards/{card_contract_id}/active"),
+    (HttpMethod.Put, "/cards/{card_contract_id}/pin"),
+    (HttpMethod.Post, "/cards/{card_contract_id}/pins/searches"),
+    (HttpMethod.Post, "/cards/{card_contract_id}/pins/verifications"),
+    (HttpMethod.Post, "/cards/{card_contract_id}/card-verification-codes/searches"),
+    (HttpMethod.Post, "/cards/{card_contract_id}/card-verification-codes/verifications"),
+    (HttpMethod.Post, "/cards/{card_contract_id}/plastics"),
+    (HttpMethod.Get, "/cards/{card_contract_id}/plastics"),
+    (HttpMethod.Post, "/clients/{client_id}/addresses"),
+    (HttpMethod.Get, "/clients/{client_id}/addresses"),
+    (HttpMethod.Put, "/clients/{client_id}/addresses/{address_type}"),
+    (HttpMethod.Post, "/contracts/{contract_id}/addresses"),
+    (HttpMethod.Get, "/contracts/{contract_id}/addresses"),
+    (HttpMethod.Put, "/contracts/{contract_id}/addresses/{address_type}"),
+    (HttpMethod.Put, "/clients/{client_id}/classifiers/{classifier_code}"),
+    (HttpMethod.Get, "/clients/{client_id}/classifiers"),
+    (HttpMethod.Put, "/contracts/{contract_id}/classifiers/{classifier_code}"),
+    (HttpMethod.Get, "/contracts/{contract_id}/classifiers"),
+    (HttpMethod.Post, "/clients/{client_id}/custom-data"),
+    (HttpMethod.Get, "/clients/{client_id}/custom-data/{tag_name}"),
+    (HttpMethod.Post, "/contracts/{contract_id}/custom-data"),
+    (HttpMethod.Get, "/contracts/{contract_id}/custom-data/{tag_name}"),
+    (HttpMethod.Put, "/contracts/{contract_id}/parameters/{parameter_code}"),
+    (HttpMethod.Get, "/contracts/{contract_id}/parameters"),
+    (HttpMethod.Post, "/contracts/{contract_id}/debits"),
+    (HttpMethod.Post, "/contracts/{contract_id}/credits"),
+    (HttpMethod.Post, "/contracts/{contract_id}/charge-fees"),
+    (HttpMethod.Get, "/contracts/{contract_id}/transactions"),
+    (HttpMethod.Get, "/contracts/{contract_id}/transaction-documents"),
+    (HttpMethod.Get, "/transaction-documents"),
+    (HttpMethod.Get, "/transactions/{transaction_id}/fees"),
+    (HttpMethod.Put, "/contracts/{contract_id}/usage-limits/{usage_limit_code}"),
+    (HttpMethod.Get, "/contracts/{contract_id}/usage-limits"),
+    (HttpMethod.Put, "/contracts/{contract_id}/usage-limits/{usage_limit_code}/original-values"),
+    (HttpMethod.Put, "/contracts/{contract_id}/usage-limits/{usage_limit_code}/resetting-counters"),
+    (HttpMethod.Put, "/contracts/{contract_id}/usage-limits/{usage_limit_code}/status"),
+    (HttpMethod.Post, "/contracts/{contract_id}/service-limit-tariffs"),
+    (HttpMethod.Get, "/contracts/{contract_id}/tariff-data"),
+    (HttpMethod.Post, "/clients/searches"),
+    (HttpMethod.Post, "/accounts/searches"),
+    (HttpMethod.Post, "/cards/searches"),
+    (HttpMethod.Get, "/public-keys"),
+    (HttpMethod.Put, "/contracts/{contract_id}/authentication-method"),
+    (HttpMethod.Put, "/contracts/{contract_id}/transactions/{transaction_id}/releasing-blocked-funds"),
+    (HttpMethod.Post, "/transactions/{transaction_id}/reversals"),
+    (HttpMethod.Get, "/contracts/{contract_id}/authentication-parameter-values"),
+};
+
+foreach (var route in proxyRoutes)
+{
+    var template = route.Template;
+    var method = route.Method;
+    var routeName = $"Proxy_{method.Method}_{template}"
+        .Replace('/', '_').Replace('{', '_').Replace('}', '_').Replace('-', '_');
+
+    api.MapMethods(template, [method.Method], async (HttpContext httpContext, IProcessingCoreClient client, CancellationToken cancellationToken) =>
+        {
+            var downstreamPath = BuildDownstreamPath(httpContext, template);
+            JsonElement? body = method == HttpMethod.Get || method == HttpMethod.Delete
+                ? null
+                : await ReadBodyAsync(httpContext, cancellationToken);
+
+            var result = await client.SendAsync(method, downstreamPath, body, cancellationToken);
+            return result is null ? Results.NoContent() : Results.Ok(result.Value);
+        })
+        .WithName(routeName)
+        .WithSummary($"{method.Method} {template} (generic pass-through to Mastercard Processing Core)")
+        .WithTags("Mastercard Processing Core (Proxy)");
+}
+
+app.Run();
+
+static string BuildDownstreamPath(HttpContext context, string template)
+{
+    var path = template.TrimStart('/');
+    foreach (var (key, value) in context.Request.RouteValues)
+    {
+        path = path.Replace($"{{{key}}}", Uri.EscapeDataString(value?.ToString() ?? string.Empty));
+    }
+
+    if (context.Request.QueryString.HasValue)
+    {
+        path += context.Request.QueryString.Value;
+    }
+
+    return path;
+}
+
+static async Task<JsonElement?> ReadBodyAsync(HttpContext context, CancellationToken cancellationToken)
+{
+    if (context.Request.ContentLength is null or 0)
+    {
+        return null;
+    }
+
+    using var doc = await JsonDocument.ParseAsync(context.Request.Body, cancellationToken: cancellationToken);
+    return doc.RootElement.Clone();
+}
+
+public partial class Program;

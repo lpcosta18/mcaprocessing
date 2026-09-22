@@ -1,0 +1,317 @@
+﻿using System.Text.Json;
+using Unico.Mastercard.Api.Models;
+
+namespace Unico.Mastercard.Api.Client;
+
+/// <summary>Returns canned data shaped like the Mastercard Processing Core sandbox responses.</summary>
+public sealed class MockProcessingCoreClient : IProcessingCoreClient
+{
+    public Task<AccountContractsResponse> GetAccountContractsAsync(
+        string clientId, int offset, int limit, CancellationToken cancellationToken = default)
+    {
+        var contract = new AccountContract(
+            AccountContractId: 60001,
+            AccountContractName: "North Division Account",
+            AccountContractNumber: "ABC_121235694296313",
+            AccountContractLevel: ".",
+            BillingAccountContractId: 60001,
+            BillingAccountContractNumber: "ABC_121235694296313",
+            TopAccountContractId: 60001,
+            TopAccountContractNumber: "ABC_121235694296313",
+            Currency: "EUR",
+            ProductCode: "STD-DEBCH-EUR",
+            ProductName: "Standard Debit Account",
+            DateOpen: "2019-06-25",
+            DateClose: "2021-12-31",
+            AccountContractStatusData: new AccountContractStatus("00", "Account OK", "00", "Account OK"),
+            AccountContractBalances: new AccountContractBalances(
+                Available: 1401.21m,
+                Balance: 15123.56m,
+                BlockedAmount: 751.28m,
+                CreditLimit: 1231.78m,
+                AdditionalLimit: 123.12m,
+                PastDue: 241.21m,
+                TotalDue: 381.14m),
+            AccountContractOwner: new AccountContractOwner(453135, "ABC_685400081", "John Doe"));
+
+        var response = new AccountContractsResponse(
+            Count: 1,
+            Limit: limit,
+            Offset: offset,
+            Total: 1,
+            ClientAccountContracts: [contract]);
+
+        return Task.FromResult(response);
+    }
+
+    public Task<ContractBalancesResponse> GetContractBalancesAsync(
+        string contractId, IReadOnlyCollection<string> balanceCodes, CancellationToken cancellationToken = default)
+    {
+        var balances = balanceCodes
+            .Select((code, index) => new ContractBalance(code, "EUR", 89516416 + index, 9811.31m))
+            .ToList();
+
+        return Task.FromResult(new ContractBalancesResponse(balances));
+    }
+
+    public Task<JsonElement?> SendAsync(
+        HttpMethod method, string relativePathAndQuery, JsonElement? body = null, CancellationToken cancellationToken = default)
+    {
+        var payload = new
+        {
+            mock = true,
+            method = method.Method,
+            path = relativePathAndQuery,
+            receivedBody = body
+        };
+
+        return Task.FromResult<JsonElement?>(JsonSerializer.SerializeToElement(payload));
+    }
+
+    private static Task<JsonElement?> MockResult(string operation, object? data = null)
+    {
+        var payload = new { mock = true, operation, data };
+        return Task.FromResult<JsonElement?>(JsonSerializer.SerializeToElement(payload));
+    }
+
+    // --- Client ---
+
+    public Task<JsonElement?> CreateClientAsync(ClientCreationRequest body, string? idempotencyKey, CancellationToken cancellationToken = default) =>
+        MockResult(nameof(CreateClientAsync), new { clientId = 40000, body });
+
+    public Task<JsonElement?> GetClientAsync(long clientId, CancellationToken cancellationToken = default) =>
+        MockResult(nameof(GetClientAsync), new { clientId });
+
+    public Task UpdateClientAsync(long clientId, ClientModificationRequest body, string? ifMatch, string? idempotencyKey, CancellationToken cancellationToken = default) =>
+        Task.CompletedTask;
+
+    public Task<JsonElement?> GetCardContractsByClientAsync(
+        long clientId, string? creationDateFrom, string? statuses, int? limit, int? offset, CancellationToken cancellationToken = default) =>
+        MockResult(nameof(GetCardContractsByClientAsync), new { clientId, cardContracts = Array.Empty<object>() });
+
+    public Task ClearOnlinePinAttemptsForClientAsync(long clientId, CancellationToken cancellationToken = default) => Task.CompletedTask;
+
+    // --- Contract ---
+
+    public Task<JsonElement?> OpenEventAsync(long contractId, EventRequest body, string? idempotencyKey, CancellationToken cancellationToken = default) =>
+        MockResult(nameof(OpenEventAsync), new { contractId });
+
+    public Task<JsonElement?> GetContractFinancialsAsync(long contractId, CancellationToken cancellationToken = default) =>
+        MockResult(nameof(GetContractFinancialsAsync), new { contractId });
+
+    public Task<JsonElement?> GetTechnicalAccountsAsync(long contractId, string? technicalAccountCode, CancellationToken cancellationToken = default) =>
+        MockResult(nameof(GetTechnicalAccountsAsync), new { contractId, technicalAccountCode });
+
+    public Task<JsonElement?> GetContractTreeSummaryAsync(long contractId, int? limit, int? offset, CancellationToken cancellationToken = default) =>
+        MockResult(nameof(GetContractTreeSummaryAsync), new { contractId });
+
+    public Task ChangeContractMainContractAsync(long contractId, AccountContractIdentifierWithClientIdentifierRequest body, CancellationToken cancellationToken = default) => Task.CompletedTask;
+
+    public Task SetAuthenticationMethodAsync(long contractId, AuthenticationMethodRequest body, CancellationToken cancellationToken = default) => Task.CompletedTask;
+
+    public Task<JsonElement?> GetAuthenticationParameterValueAsync(
+        long contractId, string authenticationParameterName, string authenticationTypeCode, CancellationToken cancellationToken = default) =>
+        MockResult(nameof(GetAuthenticationParameterValueAsync), new { contractId, authenticationParameterName, authenticationTypeCode, value = "mock-value" });
+
+    // --- Account contract ---
+
+    public Task<JsonElement?> CreateAccountContractAsync(AccountContractCreationRequest body, string? idempotencyKey, CancellationToken cancellationToken = default) =>
+        MockResult(nameof(CreateAccountContractAsync), new { accountContractId = 60001 });
+
+    public Task<JsonElement?> GetAccountContractAsync(long accountContractId, CancellationToken cancellationToken = default) =>
+        MockResult(nameof(GetAccountContractAsync), new { accountContractId });
+
+    public Task UpdateAccountContractAsync(
+        long accountContractId, AccountContractModificationRequest body, string? ifMatch, string? idempotencyKey, CancellationToken cancellationToken = default) =>
+        Task.CompletedTask;
+
+    public Task ChangeAccountContractStatusAsync(long accountContractId, AccountContractStatusWithReasonRequest body, CancellationToken cancellationToken = default) => Task.CompletedTask;
+
+    public Task<JsonElement?> GetAccountContractStatusAsync(long accountContractId, CancellationToken cancellationToken = default) =>
+        MockResult(nameof(GetAccountContractStatusAsync), new { accountContractId, statusCode = "00" });
+
+    public Task ChangeAccountContractClientAsync(long accountContractId, ClientIdentifierWithRelinkTypeRequest body, CancellationToken cancellationToken = default) => Task.CompletedTask;
+
+    public Task<JsonElement?> GetSubAccountContractsAsync(long accountContractId, int? limit, int? offset, CancellationToken cancellationToken = default) =>
+        MockResult(nameof(GetSubAccountContractsAsync), new { accountContractId, subAccounts = Array.Empty<object>() });
+
+    public Task<JsonElement?> GetCardContractsByAccountAsync(
+        long accountContractId, string? creationDateFrom, string? statuses, int? limit, int? offset, CancellationToken cancellationToken = default) =>
+        MockResult(nameof(GetCardContractsByAccountAsync), new { accountContractId, cardContracts = Array.Empty<object>() });
+
+    // --- Card contract ---
+
+    public Task<JsonElement?> CreateCardContractAsync(CardContractCreationRequest body, string? idempotencyKey, CancellationToken cancellationToken = default) =>
+        MockResult(nameof(CreateCardContractAsync), new { cardContractId = 70001 });
+
+    public Task<JsonElement?> GetCardContractAsync(
+        long cardContractId, string? fieldsSelection, string? customerPublicRsaKey, CancellationToken cancellationToken = default) =>
+        MockResult(nameof(GetCardContractAsync), new { cardContractId });
+
+    public Task UpdateCardContractAsync(
+        long cardContractId, CardContractModificationRequest body, string? ifMatch, string? idempotencyKey, CancellationToken cancellationToken = default) =>
+        Task.CompletedTask;
+
+    public Task<JsonElement?> VerifyCardDetailsAsync(CardContractDetailsVerificationRequest body, string? idempotencyKey, CancellationToken cancellationToken = default) =>
+        MockResult(nameof(VerifyCardDetailsAsync), new { valid = true });
+
+    public Task ChangeCardContractStatusAsync(long cardContractId, CardContractStatusWithReasonRequest body, CancellationToken cancellationToken = default) => Task.CompletedTask;
+
+    public Task<JsonElement?> GetCardContractStatusAsync(long cardContractId, CancellationToken cancellationToken = default) =>
+        MockResult(nameof(GetCardContractStatusAsync), new { cardContractId, statusCode = "00" });
+
+    public Task ChangeCardContractClientAsync(long cardContractId, ClientIdentifierWithRelinkTypeRequest body, CancellationToken cancellationToken = default) => Task.CompletedTask;
+
+    public Task ChangeCardContractMainContractAsync(long cardContractId, AccountContractIdentifierRequest body, CancellationToken cancellationToken = default) => Task.CompletedTask;
+
+    public Task ClearOnlinePinAttemptsAsync(long cardContractId, CancellationToken cancellationToken = default) => Task.CompletedTask;
+
+    public Task ActivateCardAsync(long cardContractId, CancellationToken cancellationToken = default) => Task.CompletedTask;
+
+    public Task SetPinAsync(long cardContractId, PinCreationRequest body, int keyIndex, CancellationToken cancellationToken = default) => Task.CompletedTask;
+
+    public Task<JsonElement?> GetPinAsync(
+        long cardContractId, string customerPublicRsaKey, string? idempotencyKey, CancellationToken cancellationToken = default) =>
+        MockResult(nameof(GetPinAsync), new { cardContractId, encryptedPin = "MOCKENCRYPTEDPIN" });
+
+    public Task<JsonElement?> VerifyPinAsync(
+        long cardContractId, PinVerificationRequest body, int keyIndex, string? idempotencyKey, CancellationToken cancellationToken = default) =>
+        MockResult(nameof(VerifyPinAsync), new { cardContractId, valid = true });
+
+    public Task<JsonElement?> GetCvcAsync(
+        long cardContractId, string? customerPublicRsaKey, string? idempotencyKey, CancellationToken cancellationToken = default) =>
+        MockResult(nameof(GetCvcAsync), new { cardContractId, cvc = "123" });
+
+    public Task<JsonElement?> VerifyCvcAsync(long cardContractId, CvcVerificationRequest body, string? idempotencyKey, CancellationToken cancellationToken = default) =>
+        MockResult(nameof(VerifyCvcAsync), new { cardContractId, valid = true });
+
+    public Task<JsonElement?> ReissueCardAsync(long cardContractId, CardContractReissueRequest body, string? idempotencyKey, CancellationToken cancellationToken = default) =>
+        MockResult(nameof(ReissueCardAsync), new { cardContractId });
+
+    public Task<JsonElement?> GetCardPlasticsAsync(long cardContractId, CancellationToken cancellationToken = default) =>
+        MockResult(nameof(GetCardPlasticsAsync), new { cardContractId, plastics = Array.Empty<object>() });
+
+    // --- Address ---
+
+    public Task<JsonElement?> AddClientAddressAsync(long clientId, AddressCreationRequest body, string? idempotencyKey, CancellationToken cancellationToken = default) =>
+        MockResult(nameof(AddClientAddressAsync), new { clientId });
+
+    public Task<JsonElement?> GetClientAddressesAsync(long clientId, CancellationToken cancellationToken = default) =>
+        MockResult(nameof(GetClientAddressesAsync), new { clientId, addresses = Array.Empty<object>() });
+
+    public Task UpdateClientAddressAsync(long clientId, string addressType, AddressModificationRequest body, CancellationToken cancellationToken = default) => Task.CompletedTask;
+
+    public Task<JsonElement?> AddContractAddressAsync(long contractId, AddressCreationRequest body, string? idempotencyKey, CancellationToken cancellationToken = default) =>
+        MockResult(nameof(AddContractAddressAsync), new { contractId });
+
+    public Task<JsonElement?> GetContractAddressesAsync(long contractId, CancellationToken cancellationToken = default) =>
+        MockResult(nameof(GetContractAddressesAsync), new { contractId, addresses = Array.Empty<object>() });
+
+    public Task UpdateContractAddressAsync(long contractId, string addressType, AddressModificationRequest body, CancellationToken cancellationToken = default) => Task.CompletedTask;
+
+    // --- Classifier ---
+
+    public Task SetClientClassifierAsync(long clientId, string classifierCode, ClassifierCreationRequest body, CancellationToken cancellationToken = default) => Task.CompletedTask;
+
+    public Task<JsonElement?> GetClientClassifiersAsync(long clientId, string? classifierCodes, CancellationToken cancellationToken = default) =>
+        MockResult(nameof(GetClientClassifiersAsync), new { clientId, classifiers = Array.Empty<object>() });
+
+    public Task SetContractClassifierAsync(long contractId, string classifierCode, ClassifierCreationRequest body, CancellationToken cancellationToken = default) => Task.CompletedTask;
+
+    public Task<JsonElement?> GetContractClassifiersAsync(long contractId, string? classifierCodes, CancellationToken cancellationToken = default) =>
+        MockResult(nameof(GetContractClassifiersAsync), new { contractId, classifiers = Array.Empty<object>() });
+
+    // --- Custom data ---
+
+    public Task<JsonElement?> SetClientCustomDataAsync(long clientId, CustomDataTagsRequest body, string? idempotencyKey, CancellationToken cancellationToken = default) =>
+        MockResult(nameof(SetClientCustomDataAsync), new { clientId });
+
+    public Task<JsonElement?> GetClientCustomDataAsync(long clientId, string tagName, CancellationToken cancellationToken = default) =>
+        MockResult(nameof(GetClientCustomDataAsync), new { clientId, tagName, value = "mock-value" });
+
+    public Task<JsonElement?> SetContractCustomDataAsync(long contractId, CustomDataTagsRequest body, string? idempotencyKey, CancellationToken cancellationToken = default) =>
+        MockResult(nameof(SetContractCustomDataAsync), new { contractId });
+
+    public Task<JsonElement?> GetContractCustomDataAsync(long contractId, string tagName, CancellationToken cancellationToken = default) =>
+        MockResult(nameof(GetContractCustomDataAsync), new { contractId, tagName, value = "mock-value" });
+
+    // --- Parameter ---
+
+    public Task SetContractParameterAsync(long contractId, string parameterCode, ParameterModificationRequest body, CancellationToken cancellationToken = default) => Task.CompletedTask;
+
+    public Task<JsonElement?> GetContractParametersAsync(long contractId, string? parameterCodes, CancellationToken cancellationToken = default) =>
+        MockResult(nameof(GetContractParametersAsync), new { contractId, parameters = Array.Empty<object>() });
+
+    // --- Transaction ---
+
+    public Task<JsonElement?> DebitContractAsync(long contractId, TransactionContractDebitRequest body, string? idempotencyKey, CancellationToken cancellationToken = default) =>
+        MockResult(nameof(DebitContractAsync), new { contractId, transactionId = 89516416 });
+
+    public Task<JsonElement?> CreditContractAsync(long contractId, TransactionContractCreditRequest body, string? idempotencyKey, CancellationToken cancellationToken = default) =>
+        MockResult(nameof(CreditContractAsync), new { contractId, transactionId = 89516417 });
+
+    public Task<JsonElement?> ChargeFeeAsync(long contractId, ChargeFeeRequest body, string? idempotencyKey, CancellationToken cancellationToken = default) =>
+        MockResult(nameof(ChargeFeeAsync), new { contractId, transactionId = 89516418 });
+
+    public Task<JsonElement?> GetTransactionsAsync(
+        long contractId, string? transactionDateFrom, string? transactionDateTo, string? transactionAuthorizationFilterMode,
+        bool? transactionAuthorized, int? limit, int? offset, string? transactionTypeCodes, CancellationToken cancellationToken = default) =>
+        MockResult(nameof(GetTransactionsAsync), new { contractId, transactions = Array.Empty<object>() });
+
+    public Task<JsonElement?> GetContractTransactionDocumentsAsync(
+        long contractId, string? transactionDateFrom, string? transactionDateTo, string? transactionAuthorizationFilterMode,
+        bool? transactionCollectAuthorizations, bool? contractHierarchy, string? direction, int? limit, int? offset,
+        string? transactionTypeCodes, CancellationToken cancellationToken = default) =>
+        MockResult(nameof(GetContractTransactionDocumentsAsync), new { contractId, transactionDocuments = Array.Empty<object>() });
+
+    public Task<JsonElement?> GetTransactionDocumentsAsync(
+        string transactionSelectorType, string transactionSelectorValue, int? limit, int? offset, CancellationToken cancellationToken = default) =>
+        MockResult(nameof(GetTransactionDocumentsAsync), new { transactionDocuments = Array.Empty<object>() });
+
+    public Task<JsonElement?> GetTransactionFeesAsync(long transactionId, CancellationToken cancellationToken = default) =>
+        MockResult(nameof(GetTransactionFeesAsync), new { transactionId, fees = Array.Empty<object>() });
+
+    public Task ReleaseBlockedFundsAsync(long contractId, long transactionId, BlockedFundsReleaseRequest body, CancellationToken cancellationToken = default) => Task.CompletedTask;
+
+    public Task<JsonElement?> ReverseTransactionAsync(long transactionId, ReverseTransactionReasonRequest body, string? idempotencyKey, CancellationToken cancellationToken = default) =>
+        MockResult(nameof(ReverseTransactionAsync), new { transactionId, reversed = true });
+
+    // --- Usage limit ---
+
+    public Task SetUsageLimitAsync(long contractId, string usageLimitCode, UsageLimitModificationRequest body, CancellationToken cancellationToken = default) => Task.CompletedTask;
+
+    public Task<JsonElement?> GetUsageLimitsAsync(long contractId, string? usageLimitCodes, CancellationToken cancellationToken = default) =>
+        MockResult(nameof(GetUsageLimitsAsync), new { contractId, usageLimits = Array.Empty<object>() });
+
+    public Task RestoreUsageLimitOriginalValuesAsync(long contractId, string usageLimitCode, CancellationToken cancellationToken = default) => Task.CompletedTask;
+
+    public Task ResetUsageLimitCountersAsync(long contractId, string usageLimitCode, UsageLimitResettingRequest body, CancellationToken cancellationToken = default) => Task.CompletedTask;
+
+    public Task ChangeUsageLimitStatusAsync(long contractId, string usageLimitCode, UsageLimitStatusRequest body, CancellationToken cancellationToken = default) => Task.CompletedTask;
+
+    // --- Tariff ---
+
+    public Task<JsonElement?> SetServiceLimitTariffAsync(long contractId, ServiceLimitTariffRequest body, string? idempotencyKey, CancellationToken cancellationToken = default) =>
+        MockResult(nameof(SetServiceLimitTariffAsync), new { contractId });
+
+    public Task<JsonElement?> GetContractTariffDataAsync(
+        long contractId, int? limit, int? offset, string? personalisationType, string? tariffCode,
+        string? tariffDomainCode, string? tariffRole, string? tariffTypeCode, CancellationToken cancellationToken = default) =>
+        MockResult(nameof(GetContractTariffDataAsync), new { contractId, tariffs = Array.Empty<object>() });
+
+    // --- Search ---
+
+    public Task<JsonElement?> GetClientIdAsync(ClientIdentifierSearchRequest body, string? idempotencyKey, CancellationToken cancellationToken = default) =>
+        MockResult(nameof(GetClientIdAsync), new { clientId = 40000 });
+
+    public Task<JsonElement?> GetAccountContractIdAsync(AccountContractIdentifierSearchRequest body, string? idempotencyKey, CancellationToken cancellationToken = default) =>
+        MockResult(nameof(GetAccountContractIdAsync), new { accountContractId = 60001 });
+
+    public Task<JsonElement?> GetCardContractIdAsync(CardContractIdentifierSearchRequest body, string? idempotencyKey, CancellationToken cancellationToken = default) =>
+        MockResult(nameof(GetCardContractIdAsync), new { cardContractId = 70001 });
+
+    // --- Security ---
+
+    public Task<JsonElement?> GetPublicRsaKeyAsync(string dateTypeToSecure, CancellationToken cancellationToken = default) =>
+        MockResult(nameof(GetPublicRsaKeyAsync), new { publicKey = "MOCKPUBLICKEY", dateTypeToSecure });
+}

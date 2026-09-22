@@ -1,0 +1,2666 @@
+[
+  {
+    "ContainingType": "Program\u002B\u003C\u003Ec",
+    "Method": "\u003C\u003CMain\u003E$\u003Eb__0_16",
+    "RelativePath": "api/processing-core/accounts",
+    "HttpMethod": "POST",
+    "IsController": false,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "body",
+        "Type": "Unico.Mastercard.Api.Models.AccountContractCreationRequest",
+        "IsRequired": true
+      },
+      {
+        "Name": "idempotencyKey",
+        "Type": "System.String",
+        "IsRequired": false
+      }
+    ],
+    "ReturnTypes": [
+      {
+        "Type": "System.Void",
+        "MediaTypes": [],
+        "StatusCode": 200
+      }
+    ],
+    "Tags": [
+      "Account contract"
+    ],
+    "EndpointName": "CreateAccountContract",
+    "Summary": "Creates an account contract"
+  },
+  {
+    "ContainingType": "Program\u002B\u003C\u003Ec",
+    "Method": "\u003C\u003CMain\u003E$\u003Eb__0_17",
+    "RelativePath": "api/processing-core/accounts/{accountContractId:long}",
+    "HttpMethod": "GET",
+    "IsController": false,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "accountContractId",
+        "Type": "System.Int64",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": [
+      {
+        "Type": "System.Void",
+        "MediaTypes": [],
+        "StatusCode": 200
+      }
+    ],
+    "Tags": [
+      "Account contract"
+    ],
+    "EndpointName": "GetAccountContract",
+    "Summary": "Retrieves an account contract"
+  },
+  {
+    "ContainingType": "Program\u002B\u003C\u003Ec",
+    "Method": "\u003C\u003CMain\u003E$\u003Eb__0_18",
+    "RelativePath": "api/processing-core/accounts/{accountContractId:long}",
+    "HttpMethod": "PATCH",
+    "IsController": false,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "accountContractId",
+        "Type": "System.Int64",
+        "IsRequired": true
+      },
+      {
+        "Name": "body",
+        "Type": "Unico.Mastercard.Api.Models.AccountContractModificationRequest",
+        "IsRequired": true
+      },
+      {
+        "Name": "ifMatch",
+        "Type": "System.String",
+        "IsRequired": false
+      },
+      {
+        "Name": "idempotencyKey",
+        "Type": "System.String",
+        "IsRequired": false
+      }
+    ],
+    "ReturnTypes": [
+      {
+        "Type": "System.Void",
+        "MediaTypes": [],
+        "StatusCode": 200
+      }
+    ],
+    "Tags": [
+      "Account contract"
+    ],
+    "EndpointName": "UpdateAccountContract",
+    "Summary": "Updates an account contract"
+  },
+  {
+    "ContainingType": "Program\u002B\u003C\u003Ec",
+    "Method": "\u003C\u003CMain\u003E$\u003Eb__0_23",
+    "RelativePath": "api/processing-core/accounts/{accountContractId:long}/card-contracts",
+    "HttpMethod": "GET",
+    "IsController": false,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "accountContractId",
+        "Type": "System.Int64",
+        "IsRequired": true
+      },
+      {
+        "Name": "creationDateFrom",
+        "Type": "System.String",
+        "IsRequired": false
+      },
+      {
+        "Name": "statuses",
+        "Type": "System.String",
+        "IsRequired": false
+      },
+      {
+        "Name": "limit",
+        "Type": "System.Nullable\u00601[[System.Int32, System.Private.CoreLib, Version=10.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e]]",
+        "IsRequired": false
+      },
+      {
+        "Name": "offset",
+        "Type": "System.Nullable\u00601[[System.Int32, System.Private.CoreLib, Version=10.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e]]",
+        "IsRequired": false
+      }
+    ],
+    "ReturnTypes": [
+      {
+        "Type": "System.Void",
+        "MediaTypes": [],
+        "StatusCode": 200
+      }
+    ],
+    "Tags": [
+      "Account contract"
+    ],
+    "EndpointName": "GetCardContractsByAccount",
+    "Summary": "Retrieves a list of card contracts for a specified account contract"
+  },
+  {
+    "ContainingType": "Program\u002B\u003C\u003Ec",
+    "Method": "\u003C\u003CMain\u003E$\u003Eb__0_21",
+    "RelativePath": "api/processing-core/accounts/{accountContractId:long}/client-identifier",
+    "HttpMethod": "PUT",
+    "IsController": false,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "accountContractId",
+        "Type": "System.Int64",
+        "IsRequired": true
+      },
+      {
+        "Name": "body",
+        "Type": "Unico.Mastercard.Api.Models.ClientIdentifierWithRelinkTypeRequest",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": [
+      {
+        "Type": "System.Void",
+        "MediaTypes": [],
+        "StatusCode": 200
+      }
+    ],
+    "Tags": [
+      "Account contract"
+    ],
+    "EndpointName": "ChangeAccountContractClient",
+    "Summary": "Relinks an account contract to another client"
+  },
+  {
+    "ContainingType": "Program\u002B\u003C\u003Ec",
+    "Method": "\u003C\u003CMain\u003E$\u003Eb__0_19",
+    "RelativePath": "api/processing-core/accounts/{accountContractId:long}/status",
+    "HttpMethod": "PUT",
+    "IsController": false,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "accountContractId",
+        "Type": "System.Int64",
+        "IsRequired": true
+      },
+      {
+        "Name": "body",
+        "Type": "Unico.Mastercard.Api.Models.AccountContractStatusWithReasonRequest",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": [
+      {
+        "Type": "System.Void",
+        "MediaTypes": [],
+        "StatusCode": 200
+      }
+    ],
+    "Tags": [
+      "Account contract"
+    ],
+    "EndpointName": "ChangeAccountContractStatus",
+    "Summary": "Changes an account contract status"
+  },
+  {
+    "ContainingType": "Program\u002B\u003C\u003Ec",
+    "Method": "\u003C\u003CMain\u003E$\u003Eb__0_20",
+    "RelativePath": "api/processing-core/accounts/{accountContractId:long}/statuses",
+    "HttpMethod": "GET",
+    "IsController": false,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "accountContractId",
+        "Type": "System.Int64",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": [
+      {
+        "Type": "System.Void",
+        "MediaTypes": [],
+        "StatusCode": 200
+      }
+    ],
+    "Tags": [
+      "Account contract"
+    ],
+    "EndpointName": "GetAccountContractStatus",
+    "Summary": "Retrieves account contract status"
+  },
+  {
+    "ContainingType": "Program\u002B\u003C\u003Ec",
+    "Method": "\u003C\u003CMain\u003E$\u003Eb__0_22",
+    "RelativePath": "api/processing-core/accounts/{accountContractId:long}/sub-accounts",
+    "HttpMethod": "GET",
+    "IsController": false,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "accountContractId",
+        "Type": "System.Int64",
+        "IsRequired": true
+      },
+      {
+        "Name": "limit",
+        "Type": "System.Nullable\u00601[[System.Int32, System.Private.CoreLib, Version=10.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e]]",
+        "IsRequired": false
+      },
+      {
+        "Name": "offset",
+        "Type": "System.Nullable\u00601[[System.Int32, System.Private.CoreLib, Version=10.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e]]",
+        "IsRequired": false
+      }
+    ],
+    "ReturnTypes": [
+      {
+        "Type": "System.Void",
+        "MediaTypes": [],
+        "StatusCode": 200
+      }
+    ],
+    "Tags": [
+      "Account contract"
+    ],
+    "EndpointName": "GetSubAccountContracts",
+    "Summary": "Retrieves a list of subaccount contracts for a specified account contract"
+  },
+  {
+    "ContainingType": "Program\u002B\u003C\u003Ec",
+    "Method": "\u003C\u003CMain\u003E$\u003Eb__0_74",
+    "RelativePath": "api/processing-core/accounts/searches",
+    "HttpMethod": "POST",
+    "IsController": false,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "body",
+        "Type": "Unico.Mastercard.Api.Models.AccountContractIdentifierSearchRequest",
+        "IsRequired": true
+      },
+      {
+        "Name": "idempotencyKey",
+        "Type": "System.String",
+        "IsRequired": false
+      }
+    ],
+    "ReturnTypes": [
+      {
+        "Type": "System.Void",
+        "MediaTypes": [],
+        "StatusCode": 200
+      }
+    ],
+    "Tags": [
+      "Search"
+    ],
+    "EndpointName": "GetAccountContractId",
+    "Summary": "Returns accountContractId assigned to a given account identifier"
+  },
+  {
+    "ContainingType": "Program\u002B\u003C\u003Ec",
+    "Method": "\u003C\u003CMain\u003E$\u003Eb__0_24",
+    "RelativePath": "api/processing-core/cards",
+    "HttpMethod": "POST",
+    "IsController": false,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "body",
+        "Type": "Unico.Mastercard.Api.Models.CardContractCreationRequest",
+        "IsRequired": true
+      },
+      {
+        "Name": "idempotencyKey",
+        "Type": "System.String",
+        "IsRequired": false
+      }
+    ],
+    "ReturnTypes": [
+      {
+        "Type": "System.Void",
+        "MediaTypes": [],
+        "StatusCode": 200
+      }
+    ],
+    "Tags": [
+      "Card contract"
+    ],
+    "EndpointName": "CreateCardContract",
+    "Summary": "Creates a card contract"
+  },
+  {
+    "ContainingType": "Program\u002B\u003C\u003Ec",
+    "Method": "\u003C\u003CMain\u003E$\u003Eb__0_25",
+    "RelativePath": "api/processing-core/cards/{cardContractId:long}",
+    "HttpMethod": "GET",
+    "IsController": false,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "cardContractId",
+        "Type": "System.Int64",
+        "IsRequired": true
+      },
+      {
+        "Name": "fieldsSelection",
+        "Type": "System.String",
+        "IsRequired": false
+      },
+      {
+        "Name": "customerPublicRsaKey",
+        "Type": "System.String",
+        "IsRequired": false
+      }
+    ],
+    "ReturnTypes": [
+      {
+        "Type": "System.Void",
+        "MediaTypes": [],
+        "StatusCode": 200
+      }
+    ],
+    "Tags": [
+      "Card contract"
+    ],
+    "EndpointName": "GetCardContract",
+    "Summary": "Retrieves a card contract"
+  },
+  {
+    "ContainingType": "Program\u002B\u003C\u003Ec",
+    "Method": "\u003C\u003CMain\u003E$\u003Eb__0_26",
+    "RelativePath": "api/processing-core/cards/{cardContractId:long}",
+    "HttpMethod": "PATCH",
+    "IsController": false,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "cardContractId",
+        "Type": "System.Int64",
+        "IsRequired": true
+      },
+      {
+        "Name": "body",
+        "Type": "Unico.Mastercard.Api.Models.CardContractModificationRequest",
+        "IsRequired": true
+      },
+      {
+        "Name": "ifMatch",
+        "Type": "System.String",
+        "IsRequired": false
+      },
+      {
+        "Name": "idempotencyKey",
+        "Type": "System.String",
+        "IsRequired": false
+      }
+    ],
+    "ReturnTypes": [
+      {
+        "Type": "System.Void",
+        "MediaTypes": [],
+        "StatusCode": 200
+      }
+    ],
+    "Tags": [
+      "Card contract"
+    ],
+    "EndpointName": "UpdateCardContract",
+    "Summary": "Updates a card contract"
+  },
+  {
+    "ContainingType": "Program\u002B\u003C\u003Ec",
+    "Method": "\u003C\u003CMain\u003E$\u003Eb__0_33",
+    "RelativePath": "api/processing-core/cards/{cardContractId:long}/active",
+    "HttpMethod": "PUT",
+    "IsController": false,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "cardContractId",
+        "Type": "System.Int64",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": [
+      {
+        "Type": "System.Void",
+        "MediaTypes": [],
+        "StatusCode": 200
+      }
+    ],
+    "Tags": [
+      "Card plastic"
+    ],
+    "EndpointName": "ActivateCard",
+    "Summary": "Activates a card plastic and unlocks the card for transaction use"
+  },
+  {
+    "ContainingType": "Program\u002B\u003C\u003Ec",
+    "Method": "\u003C\u003CMain\u003E$\u003Eb__0_37",
+    "RelativePath": "api/processing-core/cards/{cardContractId:long}/card-verification-codes/searches",
+    "HttpMethod": "POST",
+    "IsController": false,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "cardContractId",
+        "Type": "System.Int64",
+        "IsRequired": true
+      },
+      {
+        "Name": "customerPublicRsaKey",
+        "Type": "System.String",
+        "IsRequired": false
+      },
+      {
+        "Name": "idempotencyKey",
+        "Type": "System.String",
+        "IsRequired": false
+      }
+    ],
+    "ReturnTypes": [
+      {
+        "Type": "System.Void",
+        "MediaTypes": [],
+        "StatusCode": 200
+      }
+    ],
+    "Tags": [
+      "Card plastic"
+    ],
+    "EndpointName": "GetCvc",
+    "Summary": "Retrieves a CVC2 for a card plastic"
+  },
+  {
+    "ContainingType": "Program\u002B\u003C\u003Ec",
+    "Method": "\u003C\u003CMain\u003E$\u003Eb__0_38",
+    "RelativePath": "api/processing-core/cards/{cardContractId:long}/card-verification-codes/verifications",
+    "HttpMethod": "POST",
+    "IsController": false,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "cardContractId",
+        "Type": "System.Int64",
+        "IsRequired": true
+      },
+      {
+        "Name": "body",
+        "Type": "Unico.Mastercard.Api.Models.CvcVerificationRequest",
+        "IsRequired": true
+      },
+      {
+        "Name": "idempotencyKey",
+        "Type": "System.String",
+        "IsRequired": false
+      }
+    ],
+    "ReturnTypes": [
+      {
+        "Type": "System.Void",
+        "MediaTypes": [],
+        "StatusCode": 200
+      }
+    ],
+    "Tags": [
+      "Card plastic"
+    ],
+    "EndpointName": "VerifyCvc",
+    "Summary": "Verifies a CVC2 of specific card plastic"
+  },
+  {
+    "ContainingType": "Program\u002B\u003C\u003Ec",
+    "Method": "\u003C\u003CMain\u003E$\u003Eb__0_30",
+    "RelativePath": "api/processing-core/cards/{cardContractId:long}/client-identifier",
+    "HttpMethod": "PUT",
+    "IsController": false,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "cardContractId",
+        "Type": "System.Int64",
+        "IsRequired": true
+      },
+      {
+        "Name": "body",
+        "Type": "Unico.Mastercard.Api.Models.ClientIdentifierWithRelinkTypeRequest",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": [
+      {
+        "Type": "System.Void",
+        "MediaTypes": [],
+        "StatusCode": 200
+      }
+    ],
+    "Tags": [
+      "Card contract"
+    ],
+    "EndpointName": "ChangeCardContractClient",
+    "Summary": "Relinks a card contract to another client"
+  },
+  {
+    "ContainingType": "Program\u002B\u003C\u003Ec",
+    "Method": "\u003C\u003CMain\u003E$\u003Eb__0_31",
+    "RelativePath": "api/processing-core/cards/{cardContractId:long}/main-contract",
+    "HttpMethod": "PUT",
+    "IsController": false,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "cardContractId",
+        "Type": "System.Int64",
+        "IsRequired": true
+      },
+      {
+        "Name": "body",
+        "Type": "Unico.Mastercard.Api.Models.AccountContractIdentifierRequest",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": [
+      {
+        "Type": "System.Void",
+        "MediaTypes": [],
+        "StatusCode": 200
+      }
+    ],
+    "Tags": [
+      "Card contract"
+    ],
+    "EndpointName": "ChangeCardContractMainContract",
+    "Summary": "Relinks a card contract to another account contract"
+  },
+  {
+    "ContainingType": "Program\u002B\u003C\u003Ec",
+    "Method": "\u003C\u003CMain\u003E$\u003Eb__0_32",
+    "RelativePath": "api/processing-core/cards/{cardContractId:long}/online-pin-attempts-counter",
+    "HttpMethod": "PUT",
+    "IsController": false,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "cardContractId",
+        "Type": "System.Int64",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": [
+      {
+        "Type": "System.Void",
+        "MediaTypes": [],
+        "StatusCode": 200
+      }
+    ],
+    "Tags": [
+      "Card contract"
+    ],
+    "EndpointName": "ClearOnlinePinAttempts",
+    "Summary": "Resets Online PIN Try Counter"
+  },
+  {
+    "ContainingType": "Program\u002B\u003C\u003Ec",
+    "Method": "\u003C\u003CMain\u003E$\u003Eb__0_34",
+    "RelativePath": "api/processing-core/cards/{cardContractId:long}/pin",
+    "HttpMethod": "PUT",
+    "IsController": false,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "cardContractId",
+        "Type": "System.Int64",
+        "IsRequired": true
+      },
+      {
+        "Name": "body",
+        "Type": "Unico.Mastercard.Api.Models.PinCreationRequest",
+        "IsRequired": true
+      },
+      {
+        "Name": "keyIndex",
+        "Type": "System.Int32",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": [
+      {
+        "Type": "System.Void",
+        "MediaTypes": [],
+        "StatusCode": 200
+      }
+    ],
+    "Tags": [
+      "Card plastic"
+    ],
+    "EndpointName": "SetPin",
+    "Summary": "Sets up new PIN for a card plastic"
+  },
+  {
+    "ContainingType": "Program\u002B\u003C\u003Ec",
+    "Method": "\u003C\u003CMain\u003E$\u003Eb__0_35",
+    "RelativePath": "api/processing-core/cards/{cardContractId:long}/pins/searches",
+    "HttpMethod": "POST",
+    "IsController": false,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "cardContractId",
+        "Type": "System.Int64",
+        "IsRequired": true
+      },
+      {
+        "Name": "customerPublicRsaKey",
+        "Type": "System.String",
+        "IsRequired": true
+      },
+      {
+        "Name": "idempotencyKey",
+        "Type": "System.String",
+        "IsRequired": false
+      }
+    ],
+    "ReturnTypes": [
+      {
+        "Type": "System.Void",
+        "MediaTypes": [],
+        "StatusCode": 200
+      }
+    ],
+    "Tags": [
+      "Card plastic"
+    ],
+    "EndpointName": "GetPin",
+    "Summary": "Retrieves a PIN for a card plastic"
+  },
+  {
+    "ContainingType": "Program\u002B\u003C\u003Ec",
+    "Method": "\u003C\u003CMain\u003E$\u003Eb__0_36",
+    "RelativePath": "api/processing-core/cards/{cardContractId:long}/pins/verifications",
+    "HttpMethod": "POST",
+    "IsController": false,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "cardContractId",
+        "Type": "System.Int64",
+        "IsRequired": true
+      },
+      {
+        "Name": "body",
+        "Type": "Unico.Mastercard.Api.Models.PinVerificationRequest",
+        "IsRequired": true
+      },
+      {
+        "Name": "keyIndex",
+        "Type": "System.Int32",
+        "IsRequired": true
+      },
+      {
+        "Name": "idempotencyKey",
+        "Type": "System.String",
+        "IsRequired": false
+      }
+    ],
+    "ReturnTypes": [
+      {
+        "Type": "System.Void",
+        "MediaTypes": [],
+        "StatusCode": 200
+      }
+    ],
+    "Tags": [
+      "Card plastic"
+    ],
+    "EndpointName": "VerifyPin",
+    "Summary": "Verifies a PIN"
+  },
+  {
+    "ContainingType": "Program\u002B\u003C\u003Ec",
+    "Method": "\u003C\u003CMain\u003E$\u003Eb__0_39",
+    "RelativePath": "api/processing-core/cards/{cardContractId:long}/plastics",
+    "HttpMethod": "POST",
+    "IsController": false,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "cardContractId",
+        "Type": "System.Int64",
+        "IsRequired": true
+      },
+      {
+        "Name": "body",
+        "Type": "Unico.Mastercard.Api.Models.CardContractReissueRequest",
+        "IsRequired": true
+      },
+      {
+        "Name": "idempotencyKey",
+        "Type": "System.String",
+        "IsRequired": false
+      }
+    ],
+    "ReturnTypes": [
+      {
+        "Type": "System.Void",
+        "MediaTypes": [],
+        "StatusCode": 200
+      }
+    ],
+    "Tags": [
+      "Card plastic"
+    ],
+    "EndpointName": "ReissueCard",
+    "Summary": "Reissues a card"
+  },
+  {
+    "ContainingType": "Program\u002B\u003C\u003Ec",
+    "Method": "\u003C\u003CMain\u003E$\u003Eb__0_40",
+    "RelativePath": "api/processing-core/cards/{cardContractId:long}/plastics",
+    "HttpMethod": "GET",
+    "IsController": false,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "cardContractId",
+        "Type": "System.Int64",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": [
+      {
+        "Type": "System.Void",
+        "MediaTypes": [],
+        "StatusCode": 200
+      }
+    ],
+    "Tags": [
+      "Card plastic"
+    ],
+    "EndpointName": "GetCardPlastics",
+    "Summary": "Retrieves information about all card plastics for a specified card contract"
+  },
+  {
+    "ContainingType": "Program\u002B\u003C\u003Ec",
+    "Method": "\u003C\u003CMain\u003E$\u003Eb__0_28",
+    "RelativePath": "api/processing-core/cards/{cardContractId:long}/status",
+    "HttpMethod": "PUT",
+    "IsController": false,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "cardContractId",
+        "Type": "System.Int64",
+        "IsRequired": true
+      },
+      {
+        "Name": "body",
+        "Type": "Unico.Mastercard.Api.Models.CardContractStatusWithReasonRequest",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": [
+      {
+        "Type": "System.Void",
+        "MediaTypes": [],
+        "StatusCode": 200
+      }
+    ],
+    "Tags": [
+      "Card contract"
+    ],
+    "EndpointName": "ChangeCardContractStatus",
+    "Summary": "Sets new status for the card contract"
+  },
+  {
+    "ContainingType": "Program\u002B\u003C\u003Ec",
+    "Method": "\u003C\u003CMain\u003E$\u003Eb__0_29",
+    "RelativePath": "api/processing-core/cards/{cardContractId:long}/statuses",
+    "HttpMethod": "GET",
+    "IsController": false,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "cardContractId",
+        "Type": "System.Int64",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": [
+      {
+        "Type": "System.Void",
+        "MediaTypes": [],
+        "StatusCode": 200
+      }
+    ],
+    "Tags": [
+      "Card contract"
+    ],
+    "EndpointName": "GetCardContractStatus",
+    "Summary": "Retrieves card contract status"
+  },
+  {
+    "ContainingType": "Program\u002B\u003C\u003Ec",
+    "Method": "\u003C\u003CMain\u003E$\u003Eb__0_27",
+    "RelativePath": "api/processing-core/cards/details-verifications",
+    "HttpMethod": "POST",
+    "IsController": false,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "body",
+        "Type": "Unico.Mastercard.Api.Models.CardContractDetailsVerificationRequest",
+        "IsRequired": true
+      },
+      {
+        "Name": "idempotencyKey",
+        "Type": "System.String",
+        "IsRequired": false
+      }
+    ],
+    "ReturnTypes": [
+      {
+        "Type": "System.Void",
+        "MediaTypes": [],
+        "StatusCode": 200
+      }
+    ],
+    "Tags": [
+      "Card contract"
+    ],
+    "EndpointName": "VerifyCardDetails",
+    "Summary": "Verifies card details"
+  },
+  {
+    "ContainingType": "Program\u002B\u003C\u003Ec",
+    "Method": "\u003C\u003CMain\u003E$\u003Eb__0_75",
+    "RelativePath": "api/processing-core/cards/searches",
+    "HttpMethod": "POST",
+    "IsController": false,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "body",
+        "Type": "Unico.Mastercard.Api.Models.CardContractIdentifierSearchRequest",
+        "IsRequired": true
+      },
+      {
+        "Name": "idempotencyKey",
+        "Type": "System.String",
+        "IsRequired": false
+      }
+    ],
+    "ReturnTypes": [
+      {
+        "Type": "System.Void",
+        "MediaTypes": [],
+        "StatusCode": 200
+      }
+    ],
+    "Tags": [
+      "Search"
+    ],
+    "EndpointName": "GetCardContractId",
+    "Summary": "Returns cardContractId assigned to a given card contract identifier"
+  },
+  {
+    "ContainingType": "Program\u002B\u003C\u003Ec",
+    "Method": "\u003C\u003CMain\u003E$\u003Eb__0_4",
+    "RelativePath": "api/processing-core/clients",
+    "HttpMethod": "POST",
+    "IsController": false,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "body",
+        "Type": "Unico.Mastercard.Api.Models.ClientCreationRequest",
+        "IsRequired": true
+      },
+      {
+        "Name": "idempotencyKey",
+        "Type": "System.String",
+        "IsRequired": false
+      }
+    ],
+    "ReturnTypes": [
+      {
+        "Type": "System.Void",
+        "MediaTypes": [],
+        "StatusCode": 200
+      }
+    ],
+    "Tags": [
+      "Client"
+    ],
+    "EndpointName": "CreateClient",
+    "Summary": "Creates a client"
+  },
+  {
+    "ContainingType": "Program\u002B\u003C\u003Ec",
+    "Method": "\u003C\u003CMain\u003E$\u003Eb__0_5",
+    "RelativePath": "api/processing-core/clients/{clientId:long}",
+    "HttpMethod": "GET",
+    "IsController": false,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "clientId",
+        "Type": "System.Int64",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": [
+      {
+        "Type": "System.Void",
+        "MediaTypes": [],
+        "StatusCode": 200
+      }
+    ],
+    "Tags": [
+      "Client"
+    ],
+    "EndpointName": "GetClient",
+    "Summary": "Retrieves a client"
+  },
+  {
+    "ContainingType": "Program\u002B\u003C\u003Ec",
+    "Method": "\u003C\u003CMain\u003E$\u003Eb__0_6",
+    "RelativePath": "api/processing-core/clients/{clientId:long}",
+    "HttpMethod": "PATCH",
+    "IsController": false,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "clientId",
+        "Type": "System.Int64",
+        "IsRequired": true
+      },
+      {
+        "Name": "body",
+        "Type": "Unico.Mastercard.Api.Models.ClientModificationRequest",
+        "IsRequired": true
+      },
+      {
+        "Name": "ifMatch",
+        "Type": "System.String",
+        "IsRequired": false
+      },
+      {
+        "Name": "idempotencyKey",
+        "Type": "System.String",
+        "IsRequired": false
+      }
+    ],
+    "ReturnTypes": [
+      {
+        "Type": "System.Void",
+        "MediaTypes": [],
+        "StatusCode": 200
+      }
+    ],
+    "Tags": [
+      "Client"
+    ],
+    "EndpointName": "UpdateClient",
+    "Summary": "Updates a client"
+  },
+  {
+    "ContainingType": "Program\u002B\u003C\u003Ec",
+    "Method": "\u003C\u003CMain\u003E$\u003Eb__0_41",
+    "RelativePath": "api/processing-core/clients/{clientId:long}/addresses",
+    "HttpMethod": "POST",
+    "IsController": false,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "clientId",
+        "Type": "System.Int64",
+        "IsRequired": true
+      },
+      {
+        "Name": "body",
+        "Type": "Unico.Mastercard.Api.Models.AddressCreationRequest",
+        "IsRequired": true
+      },
+      {
+        "Name": "idempotencyKey",
+        "Type": "System.String",
+        "IsRequired": false
+      }
+    ],
+    "ReturnTypes": [
+      {
+        "Type": "System.Void",
+        "MediaTypes": [],
+        "StatusCode": 200
+      }
+    ],
+    "Tags": [
+      "Address"
+    ],
+    "EndpointName": "AddClientAddress",
+    "Summary": "Creates an address for a client"
+  },
+  {
+    "ContainingType": "Program\u002B\u003C\u003Ec",
+    "Method": "\u003C\u003CMain\u003E$\u003Eb__0_42",
+    "RelativePath": "api/processing-core/clients/{clientId:long}/addresses",
+    "HttpMethod": "GET",
+    "IsController": false,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "clientId",
+        "Type": "System.Int64",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": [
+      {
+        "Type": "System.Void",
+        "MediaTypes": [],
+        "StatusCode": 200
+      }
+    ],
+    "Tags": [
+      "Address"
+    ],
+    "EndpointName": "GetClientAddresses",
+    "Summary": "Retrieves a list of addresses for the client"
+  },
+  {
+    "ContainingType": "Program\u002B\u003C\u003Ec",
+    "Method": "\u003C\u003CMain\u003E$\u003Eb__0_43",
+    "RelativePath": "api/processing-core/clients/{clientId:long}/addresses/{addressType}",
+    "HttpMethod": "PUT",
+    "IsController": false,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "clientId",
+        "Type": "System.Int64",
+        "IsRequired": true
+      },
+      {
+        "Name": "addressType",
+        "Type": "System.String",
+        "IsRequired": true
+      },
+      {
+        "Name": "body",
+        "Type": "Unico.Mastercard.Api.Models.AddressModificationRequest",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": [
+      {
+        "Type": "System.Void",
+        "MediaTypes": [],
+        "StatusCode": 200
+      }
+    ],
+    "Tags": [
+      "Address"
+    ],
+    "EndpointName": "UpdateClientAddress",
+    "Summary": "Updates an address of a selected type for the client"
+  },
+  {
+    "ContainingType": "Program\u002B\u003C\u003Ec",
+    "Method": "\u003C\u003CMain\u003E$\u003Eb__0_7",
+    "RelativePath": "api/processing-core/clients/{clientId:long}/card-contracts",
+    "HttpMethod": "GET",
+    "IsController": false,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "clientId",
+        "Type": "System.Int64",
+        "IsRequired": true
+      },
+      {
+        "Name": "creationDateFrom",
+        "Type": "System.String",
+        "IsRequired": false
+      },
+      {
+        "Name": "statuses",
+        "Type": "System.String",
+        "IsRequired": false
+      },
+      {
+        "Name": "limit",
+        "Type": "System.Nullable\u00601[[System.Int32, System.Private.CoreLib, Version=10.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e]]",
+        "IsRequired": false
+      },
+      {
+        "Name": "offset",
+        "Type": "System.Nullable\u00601[[System.Int32, System.Private.CoreLib, Version=10.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e]]",
+        "IsRequired": false
+      }
+    ],
+    "ReturnTypes": [
+      {
+        "Type": "System.Void",
+        "MediaTypes": [],
+        "StatusCode": 200
+      }
+    ],
+    "Tags": [
+      "Client"
+    ],
+    "EndpointName": "GetCardContractsByClient",
+    "Summary": "Retrieves a list of card contracts for a specified client"
+  },
+  {
+    "ContainingType": "Program\u002B\u003C\u003Ec",
+    "Method": "\u003C\u003CMain\u003E$\u003Eb__0_48",
+    "RelativePath": "api/processing-core/clients/{clientId:long}/classifiers",
+    "HttpMethod": "GET",
+    "IsController": false,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "clientId",
+        "Type": "System.Int64",
+        "IsRequired": true
+      },
+      {
+        "Name": "classifierCodes",
+        "Type": "System.String",
+        "IsRequired": false
+      }
+    ],
+    "ReturnTypes": [
+      {
+        "Type": "System.Void",
+        "MediaTypes": [],
+        "StatusCode": 200
+      }
+    ],
+    "Tags": [
+      "Classifier"
+    ],
+    "EndpointName": "GetClientClassifiers",
+    "Summary": "Retrieves a client classifier"
+  },
+  {
+    "ContainingType": "Program\u002B\u003C\u003Ec",
+    "Method": "\u003C\u003CMain\u003E$\u003Eb__0_47",
+    "RelativePath": "api/processing-core/clients/{clientId:long}/classifiers/{classifierCode}",
+    "HttpMethod": "PUT",
+    "IsController": false,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "clientId",
+        "Type": "System.Int64",
+        "IsRequired": true
+      },
+      {
+        "Name": "classifierCode",
+        "Type": "System.String",
+        "IsRequired": true
+      },
+      {
+        "Name": "body",
+        "Type": "Unico.Mastercard.Api.Models.ClassifierCreationRequest",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": [
+      {
+        "Type": "System.Void",
+        "MediaTypes": [],
+        "StatusCode": 200
+      }
+    ],
+    "Tags": [
+      "Classifier"
+    ],
+    "EndpointName": "SetClientClassifier",
+    "Summary": "Sets up a client classifier"
+  },
+  {
+    "ContainingType": "Program\u002B\u003C\u003Ec",
+    "Method": "\u003C\u003CMain\u003E$\u003Eb__0_51",
+    "RelativePath": "api/processing-core/clients/{clientId:long}/custom-data",
+    "HttpMethod": "POST",
+    "IsController": false,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "clientId",
+        "Type": "System.Int64",
+        "IsRequired": true
+      },
+      {
+        "Name": "body",
+        "Type": "Unico.Mastercard.Api.Models.CustomDataTagsRequest",
+        "IsRequired": true
+      },
+      {
+        "Name": "idempotencyKey",
+        "Type": "System.String",
+        "IsRequired": false
+      }
+    ],
+    "ReturnTypes": [
+      {
+        "Type": "System.Void",
+        "MediaTypes": [],
+        "StatusCode": 200
+      }
+    ],
+    "Tags": [
+      "Custom Data"
+    ],
+    "EndpointName": "SetClientCustomData",
+    "Summary": "Sets up a custom data for a client"
+  },
+  {
+    "ContainingType": "Program\u002B\u003C\u003Ec",
+    "Method": "\u003C\u003CMain\u003E$\u003Eb__0_52",
+    "RelativePath": "api/processing-core/clients/{clientId:long}/custom-data/{tagName}",
+    "HttpMethod": "GET",
+    "IsController": false,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "clientId",
+        "Type": "System.Int64",
+        "IsRequired": true
+      },
+      {
+        "Name": "tagName",
+        "Type": "System.String",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": [
+      {
+        "Type": "System.Void",
+        "MediaTypes": [],
+        "StatusCode": 200
+      }
+    ],
+    "Tags": [
+      "Custom Data"
+    ],
+    "EndpointName": "GetClientCustomData",
+    "Summary": "Retrieves selected custom data for a client"
+  },
+  {
+    "ContainingType": "Program\u002B\u003C\u003Ec",
+    "Method": "\u003C\u003CMain\u003E$\u003Eb__0_8",
+    "RelativePath": "api/processing-core/clients/{clientId:long}/online-pin-attempts-counter",
+    "HttpMethod": "PUT",
+    "IsController": false,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "clientId",
+        "Type": "System.Int64",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": [
+      {
+        "Type": "System.Void",
+        "MediaTypes": [],
+        "StatusCode": 200
+      }
+    ],
+    "Tags": [
+      "Client"
+    ],
+    "EndpointName": "ClearOnlinePinAttemptsForClient",
+    "Summary": "Resets Online PIN Try Counter"
+  },
+  {
+    "ContainingType": "Program\u002B\u003C\u003Ec",
+    "Method": "\u003C\u003CMain\u003E$\u003Eb__0_2",
+    "RelativePath": "api/processing-core/clients/{clientId}/account-contracts",
+    "HttpMethod": "GET",
+    "IsController": false,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "clientId",
+        "Type": "System.String",
+        "IsRequired": true
+      },
+      {
+        "Name": "offset",
+        "Type": "System.Int32",
+        "IsRequired": false
+      },
+      {
+        "Name": "limit",
+        "Type": "System.Int32",
+        "IsRequired": false
+      }
+    ],
+    "ReturnTypes": [
+      {
+        "Type": "Unico.Mastercard.Api.Models.AccountContractsResponse",
+        "MediaTypes": [
+          "application/json"
+        ],
+        "StatusCode": 200
+      }
+    ],
+    "Tags": [
+      "Mastercard Processing Core"
+    ],
+    "EndpointName": "GetAccountContracts",
+    "Summary": "Retrieve a list of account contracts for a client"
+  },
+  {
+    "ContainingType": "Program\u002B\u003C\u003Ec",
+    "Method": "\u003C\u003CMain\u003E$\u003Eb__0_73",
+    "RelativePath": "api/processing-core/clients/searches",
+    "HttpMethod": "POST",
+    "IsController": false,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "body",
+        "Type": "Unico.Mastercard.Api.Models.ClientIdentifierSearchRequest",
+        "IsRequired": true
+      },
+      {
+        "Name": "idempotencyKey",
+        "Type": "System.String",
+        "IsRequired": false
+      }
+    ],
+    "ReturnTypes": [
+      {
+        "Type": "System.Void",
+        "MediaTypes": [],
+        "StatusCode": 200
+      }
+    ],
+    "Tags": [
+      "Search"
+    ],
+    "EndpointName": "GetClientId",
+    "Summary": "Returns clientId assigned to a given client identifier"
+  },
+  {
+    "ContainingType": "Program\u002B\u003C\u003Ec",
+    "Method": "\u003C\u003CMain\u003E$\u003Eb__0_44",
+    "RelativePath": "api/processing-core/contracts/{contractId:long}/addresses",
+    "HttpMethod": "POST",
+    "IsController": false,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "contractId",
+        "Type": "System.Int64",
+        "IsRequired": true
+      },
+      {
+        "Name": "body",
+        "Type": "Unico.Mastercard.Api.Models.AddressCreationRequest",
+        "IsRequired": true
+      },
+      {
+        "Name": "idempotencyKey",
+        "Type": "System.String",
+        "IsRequired": false
+      }
+    ],
+    "ReturnTypes": [
+      {
+        "Type": "System.Void",
+        "MediaTypes": [],
+        "StatusCode": 200
+      }
+    ],
+    "Tags": [
+      "Address"
+    ],
+    "EndpointName": "AddContractAddress",
+    "Summary": "Creates an address for the contract"
+  },
+  {
+    "ContainingType": "Program\u002B\u003C\u003Ec",
+    "Method": "\u003C\u003CMain\u003E$\u003Eb__0_45",
+    "RelativePath": "api/processing-core/contracts/{contractId:long}/addresses",
+    "HttpMethod": "GET",
+    "IsController": false,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "contractId",
+        "Type": "System.Int64",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": [
+      {
+        "Type": "System.Void",
+        "MediaTypes": [],
+        "StatusCode": 200
+      }
+    ],
+    "Tags": [
+      "Address"
+    ],
+    "EndpointName": "GetContractAddresses",
+    "Summary": "Retrieves a list of addresses for the contract"
+  },
+  {
+    "ContainingType": "Program\u002B\u003C\u003Ec",
+    "Method": "\u003C\u003CMain\u003E$\u003Eb__0_46",
+    "RelativePath": "api/processing-core/contracts/{contractId:long}/addresses/{addressType}",
+    "HttpMethod": "PUT",
+    "IsController": false,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "contractId",
+        "Type": "System.Int64",
+        "IsRequired": true
+      },
+      {
+        "Name": "addressType",
+        "Type": "System.String",
+        "IsRequired": true
+      },
+      {
+        "Name": "body",
+        "Type": "Unico.Mastercard.Api.Models.AddressModificationRequest",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": [
+      {
+        "Type": "System.Void",
+        "MediaTypes": [],
+        "StatusCode": 200
+      }
+    ],
+    "Tags": [
+      "Address"
+    ],
+    "EndpointName": "UpdateContractAddress",
+    "Summary": "Updates an address of a selected type for the contract"
+  },
+  {
+    "ContainingType": "Program\u002B\u003C\u003Ec",
+    "Method": "\u003C\u003CMain\u003E$\u003Eb__0_14",
+    "RelativePath": "api/processing-core/contracts/{contractId:long}/authentication-method",
+    "HttpMethod": "PUT",
+    "IsController": false,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "contractId",
+        "Type": "System.Int64",
+        "IsRequired": true
+      },
+      {
+        "Name": "body",
+        "Type": "Unico.Mastercard.Api.Models.AuthenticationMethodRequest",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": [
+      {
+        "Type": "System.Void",
+        "MediaTypes": [],
+        "StatusCode": 200
+      }
+    ],
+    "Tags": [
+      "Contract"
+    ],
+    "EndpointName": "SetAuthenticationMethod",
+    "Summary": "Sets up a contract authentication method"
+  },
+  {
+    "ContainingType": "Program\u002B\u003C\u003Ec",
+    "Method": "\u003C\u003CMain\u003E$\u003Eb__0_15",
+    "RelativePath": "api/processing-core/contracts/{contractId:long}/authentication-parameter-values",
+    "HttpMethod": "GET",
+    "IsController": false,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "contractId",
+        "Type": "System.Int64",
+        "IsRequired": true
+      },
+      {
+        "Name": "authenticationParameterName",
+        "Type": "System.String",
+        "IsRequired": true
+      },
+      {
+        "Name": "authenticationTypeCode",
+        "Type": "System.String",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": [
+      {
+        "Type": "System.Void",
+        "MediaTypes": [],
+        "StatusCode": 200
+      }
+    ],
+    "Tags": [
+      "Contract"
+    ],
+    "EndpointName": "GetAuthenticationParameterValue",
+    "Summary": "Retrieves the value of a given authentication parameter"
+  },
+  {
+    "ContainingType": "Program\u002B\u003C\u003Ec",
+    "Method": "\u003C\u003CMain\u003E$\u003Eb__0_59",
+    "RelativePath": "api/processing-core/contracts/{contractId:long}/charge-fees",
+    "HttpMethod": "POST",
+    "IsController": false,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "contractId",
+        "Type": "System.Int64",
+        "IsRequired": true
+      },
+      {
+        "Name": "body",
+        "Type": "Unico.Mastercard.Api.Models.ChargeFeeRequest",
+        "IsRequired": true
+      },
+      {
+        "Name": "idempotencyKey",
+        "Type": "System.String",
+        "IsRequired": false
+      }
+    ],
+    "ReturnTypes": [
+      {
+        "Type": "System.Void",
+        "MediaTypes": [],
+        "StatusCode": 200
+      }
+    ],
+    "Tags": [
+      "Transaction"
+    ],
+    "EndpointName": "ChargeFee",
+    "Summary": "Charges specified contract with a fee configured in the MP\u0027s CMS"
+  },
+  {
+    "ContainingType": "Program\u002B\u003C\u003Ec",
+    "Method": "\u003C\u003CMain\u003E$\u003Eb__0_50",
+    "RelativePath": "api/processing-core/contracts/{contractId:long}/classifiers",
+    "HttpMethod": "GET",
+    "IsController": false,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "contractId",
+        "Type": "System.Int64",
+        "IsRequired": true
+      },
+      {
+        "Name": "classifierCodes",
+        "Type": "System.String",
+        "IsRequired": false
+      }
+    ],
+    "ReturnTypes": [
+      {
+        "Type": "System.Void",
+        "MediaTypes": [],
+        "StatusCode": 200
+      }
+    ],
+    "Tags": [
+      "Classifier"
+    ],
+    "EndpointName": "GetContractClassifiers",
+    "Summary": "Retrieves contract\u0027s classifier"
+  },
+  {
+    "ContainingType": "Program\u002B\u003C\u003Ec",
+    "Method": "\u003C\u003CMain\u003E$\u003Eb__0_49",
+    "RelativePath": "api/processing-core/contracts/{contractId:long}/classifiers/{classifierCode}",
+    "HttpMethod": "PUT",
+    "IsController": false,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "contractId",
+        "Type": "System.Int64",
+        "IsRequired": true
+      },
+      {
+        "Name": "classifierCode",
+        "Type": "System.String",
+        "IsRequired": true
+      },
+      {
+        "Name": "body",
+        "Type": "Unico.Mastercard.Api.Models.ClassifierCreationRequest",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": [
+      {
+        "Type": "System.Void",
+        "MediaTypes": [],
+        "StatusCode": 200
+      }
+    ],
+    "Tags": [
+      "Classifier"
+    ],
+    "EndpointName": "SetContractClassifier",
+    "Summary": "Sets up a contract\u0027s classifier"
+  },
+  {
+    "ContainingType": "Program\u002B\u003C\u003Ec",
+    "Method": "\u003C\u003CMain\u003E$\u003Eb__0_58",
+    "RelativePath": "api/processing-core/contracts/{contractId:long}/credits",
+    "HttpMethod": "POST",
+    "IsController": false,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "contractId",
+        "Type": "System.Int64",
+        "IsRequired": true
+      },
+      {
+        "Name": "body",
+        "Type": "Unico.Mastercard.Api.Models.TransactionContractCreditRequest",
+        "IsRequired": true
+      },
+      {
+        "Name": "idempotencyKey",
+        "Type": "System.String",
+        "IsRequired": false
+      }
+    ],
+    "ReturnTypes": [
+      {
+        "Type": "System.Void",
+        "MediaTypes": [],
+        "StatusCode": 200
+      }
+    ],
+    "Tags": [
+      "Transaction"
+    ],
+    "EndpointName": "CreditContract",
+    "Summary": "Posts credit transaction to a contract"
+  },
+  {
+    "ContainingType": "Program\u002B\u003C\u003Ec",
+    "Method": "\u003C\u003CMain\u003E$\u003Eb__0_53",
+    "RelativePath": "api/processing-core/contracts/{contractId:long}/custom-data",
+    "HttpMethod": "POST",
+    "IsController": false,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "contractId",
+        "Type": "System.Int64",
+        "IsRequired": true
+      },
+      {
+        "Name": "body",
+        "Type": "Unico.Mastercard.Api.Models.CustomDataTagsRequest",
+        "IsRequired": true
+      },
+      {
+        "Name": "idempotencyKey",
+        "Type": "System.String",
+        "IsRequired": false
+      }
+    ],
+    "ReturnTypes": [
+      {
+        "Type": "System.Void",
+        "MediaTypes": [],
+        "StatusCode": 200
+      }
+    ],
+    "Tags": [
+      "Custom Data"
+    ],
+    "EndpointName": "SetContractCustomData",
+    "Summary": "Sets up a custom data for a specified contract"
+  },
+  {
+    "ContainingType": "Program\u002B\u003C\u003Ec",
+    "Method": "\u003C\u003CMain\u003E$\u003Eb__0_54",
+    "RelativePath": "api/processing-core/contracts/{contractId:long}/custom-data/{tagName}",
+    "HttpMethod": "GET",
+    "IsController": false,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "contractId",
+        "Type": "System.Int64",
+        "IsRequired": true
+      },
+      {
+        "Name": "tagName",
+        "Type": "System.String",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": [
+      {
+        "Type": "System.Void",
+        "MediaTypes": [],
+        "StatusCode": 200
+      }
+    ],
+    "Tags": [
+      "Custom Data"
+    ],
+    "EndpointName": "GetContractCustomData",
+    "Summary": "Retrieves selected custom data for a specified contract"
+  },
+  {
+    "ContainingType": "Program\u002B\u003C\u003Ec",
+    "Method": "\u003C\u003CMain\u003E$\u003Eb__0_57",
+    "RelativePath": "api/processing-core/contracts/{contractId:long}/debits",
+    "HttpMethod": "POST",
+    "IsController": false,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "contractId",
+        "Type": "System.Int64",
+        "IsRequired": true
+      },
+      {
+        "Name": "body",
+        "Type": "Unico.Mastercard.Api.Models.TransactionContractDebitRequest",
+        "IsRequired": true
+      },
+      {
+        "Name": "idempotencyKey",
+        "Type": "System.String",
+        "IsRequired": false
+      }
+    ],
+    "ReturnTypes": [
+      {
+        "Type": "System.Void",
+        "MediaTypes": [],
+        "StatusCode": 200
+      }
+    ],
+    "Tags": [
+      "Transaction"
+    ],
+    "EndpointName": "DebitContract",
+    "Summary": "Posts debit transaction to a contract"
+  },
+  {
+    "ContainingType": "Program\u002B\u003C\u003Ec",
+    "Method": "\u003C\u003CMain\u003E$\u003Eb__0_9",
+    "RelativePath": "api/processing-core/contracts/{contractId:long}/events",
+    "HttpMethod": "POST",
+    "IsController": false,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "contractId",
+        "Type": "System.Int64",
+        "IsRequired": true
+      },
+      {
+        "Name": "body",
+        "Type": "Unico.Mastercard.Api.Models.EventRequest",
+        "IsRequired": true
+      },
+      {
+        "Name": "idempotencyKey",
+        "Type": "System.String",
+        "IsRequired": false
+      }
+    ],
+    "ReturnTypes": [
+      {
+        "Type": "System.Void",
+        "MediaTypes": [],
+        "StatusCode": 200
+      }
+    ],
+    "Tags": [
+      "Contract"
+    ],
+    "EndpointName": "OpenEvent",
+    "Summary": "Opens an event for a specified contract"
+  },
+  {
+    "ContainingType": "Program\u002B\u003C\u003Ec",
+    "Method": "\u003C\u003CMain\u003E$\u003Eb__0_10",
+    "RelativePath": "api/processing-core/contracts/{contractId:long}/financials",
+    "HttpMethod": "GET",
+    "IsController": false,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "contractId",
+        "Type": "System.Int64",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": [
+      {
+        "Type": "System.Void",
+        "MediaTypes": [],
+        "StatusCode": 200
+      }
+    ],
+    "Tags": [
+      "Contract"
+    ],
+    "EndpointName": "GetContractFinancials",
+    "Summary": "Retrieves contract\u0027s financial information"
+  },
+  {
+    "ContainingType": "Program\u002B\u003C\u003Ec",
+    "Method": "\u003C\u003CMain\u003E$\u003Eb__0_13",
+    "RelativePath": "api/processing-core/contracts/{contractId:long}/main-contract",
+    "HttpMethod": "PUT",
+    "IsController": false,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "contractId",
+        "Type": "System.Int64",
+        "IsRequired": true
+      },
+      {
+        "Name": "body",
+        "Type": "Unico.Mastercard.Api.Models.AccountContractIdentifierWithClientIdentifierRequest",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": [
+      {
+        "Type": "System.Void",
+        "MediaTypes": [],
+        "StatusCode": 200
+      }
+    ],
+    "Tags": [
+      "Contract"
+    ],
+    "EndpointName": "ChangeContractMainContract",
+    "Summary": "Relinks a subaccount or card contract to another account contract"
+  },
+  {
+    "ContainingType": "Program\u002B\u003C\u003Ec",
+    "Method": "\u003C\u003CMain\u003E$\u003Eb__0_56",
+    "RelativePath": "api/processing-core/contracts/{contractId:long}/parameters",
+    "HttpMethod": "GET",
+    "IsController": false,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "contractId",
+        "Type": "System.Int64",
+        "IsRequired": true
+      },
+      {
+        "Name": "parameterCodes",
+        "Type": "System.String",
+        "IsRequired": false
+      }
+    ],
+    "ReturnTypes": [
+      {
+        "Type": "System.Void",
+        "MediaTypes": [],
+        "StatusCode": 200
+      }
+    ],
+    "Tags": [
+      "Parameter"
+    ],
+    "EndpointName": "GetContractParameters",
+    "Summary": "Retrieves information about contract parameter(s)"
+  },
+  {
+    "ContainingType": "Program\u002B\u003C\u003Ec",
+    "Method": "\u003C\u003CMain\u003E$\u003Eb__0_55",
+    "RelativePath": "api/processing-core/contracts/{contractId:long}/parameters/{parameterCode}",
+    "HttpMethod": "PUT",
+    "IsController": false,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "contractId",
+        "Type": "System.Int64",
+        "IsRequired": true
+      },
+      {
+        "Name": "parameterCode",
+        "Type": "System.String",
+        "IsRequired": true
+      },
+      {
+        "Name": "body",
+        "Type": "Unico.Mastercard.Api.Models.ParameterModificationRequest",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": [
+      {
+        "Type": "System.Void",
+        "MediaTypes": [],
+        "StatusCode": 200
+      }
+    ],
+    "Tags": [
+      "Parameter"
+    ],
+    "EndpointName": "SetContractParameter",
+    "Summary": "Sets up or changes a contract\u0027s parameter value"
+  },
+  {
+    "ContainingType": "Program\u002B\u003C\u003Ec",
+    "Method": "\u003C\u003CMain\u003E$\u003Eb__0_71",
+    "RelativePath": "api/processing-core/contracts/{contractId:long}/service-limit-tariffs",
+    "HttpMethod": "POST",
+    "IsController": false,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "contractId",
+        "Type": "System.Int64",
+        "IsRequired": true
+      },
+      {
+        "Name": "body",
+        "Type": "Unico.Mastercard.Api.Models.ServiceLimitTariffRequest",
+        "IsRequired": true
+      },
+      {
+        "Name": "idempotencyKey",
+        "Type": "System.String",
+        "IsRequired": false
+      }
+    ],
+    "ReturnTypes": [
+      {
+        "Type": "System.Void",
+        "MediaTypes": [],
+        "StatusCode": 200
+      }
+    ],
+    "Tags": [
+      "Tariff"
+    ],
+    "EndpointName": "SetServiceLimitTariff",
+    "Summary": "Sets up an individual service limit tariff for the contract"
+  },
+  {
+    "ContainingType": "Program\u002B\u003C\u003Ec",
+    "Method": "\u003C\u003CMain\u003E$\u003Eb__0_72",
+    "RelativePath": "api/processing-core/contracts/{contractId:long}/tariff-data",
+    "HttpMethod": "GET",
+    "IsController": false,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "contractId",
+        "Type": "System.Int64",
+        "IsRequired": true
+      },
+      {
+        "Name": "limit",
+        "Type": "System.Nullable\u00601[[System.Int32, System.Private.CoreLib, Version=10.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e]]",
+        "IsRequired": false
+      },
+      {
+        "Name": "offset",
+        "Type": "System.Nullable\u00601[[System.Int32, System.Private.CoreLib, Version=10.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e]]",
+        "IsRequired": false
+      },
+      {
+        "Name": "personalisationType",
+        "Type": "System.String",
+        "IsRequired": false
+      },
+      {
+        "Name": "tariffCode",
+        "Type": "System.String",
+        "IsRequired": false
+      },
+      {
+        "Name": "tariffDomainCode",
+        "Type": "System.String",
+        "IsRequired": false
+      },
+      {
+        "Name": "tariffRole",
+        "Type": "System.String",
+        "IsRequired": false
+      },
+      {
+        "Name": "tariffTypeCode",
+        "Type": "System.String",
+        "IsRequired": false
+      }
+    ],
+    "ReturnTypes": [
+      {
+        "Type": "System.Void",
+        "MediaTypes": [],
+        "StatusCode": 200
+      }
+    ],
+    "Tags": [
+      "Tariff"
+    ],
+    "EndpointName": "GetContractTariffData",
+    "Summary": "Retrieves information about tariff configuration for a contract"
+  },
+  {
+    "ContainingType": "Program\u002B\u003C\u003Ec",
+    "Method": "\u003C\u003CMain\u003E$\u003Eb__0_11",
+    "RelativePath": "api/processing-core/contracts/{contractId:long}/technical-accounts",
+    "HttpMethod": "GET",
+    "IsController": false,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "contractId",
+        "Type": "System.Int64",
+        "IsRequired": true
+      },
+      {
+        "Name": "technicalAccountCode",
+        "Type": "System.String",
+        "IsRequired": false
+      }
+    ],
+    "ReturnTypes": [
+      {
+        "Type": "System.Void",
+        "MediaTypes": [],
+        "StatusCode": 200
+      }
+    ],
+    "Tags": [
+      "Contract"
+    ],
+    "EndpointName": "GetTechnicalAccounts",
+    "Summary": "Retrieves technical accounts for a specified contract"
+  },
+  {
+    "ContainingType": "Program\u002B\u003C\u003Ec",
+    "Method": "\u003C\u003CMain\u003E$\u003Eb__0_61",
+    "RelativePath": "api/processing-core/contracts/{contractId:long}/transaction-documents",
+    "HttpMethod": "GET",
+    "IsController": false,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "contractId",
+        "Type": "System.Int64",
+        "IsRequired": true
+      },
+      {
+        "Name": "transactionDateFrom",
+        "Type": "System.String",
+        "IsRequired": false
+      },
+      {
+        "Name": "transactionDateTo",
+        "Type": "System.String",
+        "IsRequired": false
+      },
+      {
+        "Name": "transactionAuthorizationFilterMode",
+        "Type": "System.String",
+        "IsRequired": false
+      },
+      {
+        "Name": "transactionCollectAuthorizations",
+        "Type": "System.Nullable\u00601[[System.Boolean, System.Private.CoreLib, Version=10.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e]]",
+        "IsRequired": false
+      },
+      {
+        "Name": "contractHierarchy",
+        "Type": "System.Nullable\u00601[[System.Boolean, System.Private.CoreLib, Version=10.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e]]",
+        "IsRequired": false
+      },
+      {
+        "Name": "direction",
+        "Type": "System.String",
+        "IsRequired": false
+      },
+      {
+        "Name": "limit",
+        "Type": "System.Nullable\u00601[[System.Int32, System.Private.CoreLib, Version=10.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e]]",
+        "IsRequired": false
+      },
+      {
+        "Name": "offset",
+        "Type": "System.Nullable\u00601[[System.Int32, System.Private.CoreLib, Version=10.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e]]",
+        "IsRequired": false
+      },
+      {
+        "Name": "transactionTypeCodes",
+        "Type": "System.String",
+        "IsRequired": false
+      }
+    ],
+    "ReturnTypes": [
+      {
+        "Type": "System.Void",
+        "MediaTypes": [],
+        "StatusCode": 200
+      }
+    ],
+    "Tags": [
+      "Transaction"
+    ],
+    "EndpointName": "GetContractTransactionDocuments",
+    "Summary": "Retrieves transaction documents for a contract"
+  },
+  {
+    "ContainingType": "Program\u002B\u003C\u003Ec",
+    "Method": "\u003C\u003CMain\u003E$\u003Eb__0_60",
+    "RelativePath": "api/processing-core/contracts/{contractId:long}/transactions",
+    "HttpMethod": "GET",
+    "IsController": false,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "contractId",
+        "Type": "System.Int64",
+        "IsRequired": true
+      },
+      {
+        "Name": "transactionDateFrom",
+        "Type": "System.String",
+        "IsRequired": false
+      },
+      {
+        "Name": "transactionDateTo",
+        "Type": "System.String",
+        "IsRequired": false
+      },
+      {
+        "Name": "transactionAuthorizationFilterMode",
+        "Type": "System.String",
+        "IsRequired": false
+      },
+      {
+        "Name": "transactionAuthorized",
+        "Type": "System.Nullable\u00601[[System.Boolean, System.Private.CoreLib, Version=10.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e]]",
+        "IsRequired": false
+      },
+      {
+        "Name": "limit",
+        "Type": "System.Nullable\u00601[[System.Int32, System.Private.CoreLib, Version=10.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e]]",
+        "IsRequired": false
+      },
+      {
+        "Name": "offset",
+        "Type": "System.Nullable\u00601[[System.Int32, System.Private.CoreLib, Version=10.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e]]",
+        "IsRequired": false
+      },
+      {
+        "Name": "transactionTypeCodes",
+        "Type": "System.String",
+        "IsRequired": false
+      }
+    ],
+    "ReturnTypes": [
+      {
+        "Type": "System.Void",
+        "MediaTypes": [],
+        "StatusCode": 200
+      }
+    ],
+    "Tags": [
+      "Transaction"
+    ],
+    "EndpointName": "GetTransactions",
+    "Summary": "Retrieves transactions for a specified contract"
+  },
+  {
+    "ContainingType": "Program\u002B\u003C\u003Ec",
+    "Method": "\u003C\u003CMain\u003E$\u003Eb__0_64",
+    "RelativePath": "api/processing-core/contracts/{contractId:long}/transactions/{transactionId:long}/releasing-blocked-funds",
+    "HttpMethod": "PUT",
+    "IsController": false,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "contractId",
+        "Type": "System.Int64",
+        "IsRequired": true
+      },
+      {
+        "Name": "transactionId",
+        "Type": "System.Int64",
+        "IsRequired": true
+      },
+      {
+        "Name": "body",
+        "Type": "Unico.Mastercard.Api.Models.BlockedFundsReleaseRequest",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": [
+      {
+        "Type": "System.Void",
+        "MediaTypes": [],
+        "StatusCode": 200
+      }
+    ],
+    "Tags": [
+      "Transaction"
+    ],
+    "EndpointName": "ReleaseBlockedFunds",
+    "Summary": "Releases funds of the pending transaction"
+  },
+  {
+    "ContainingType": "Program\u002B\u003C\u003Ec",
+    "Method": "\u003C\u003CMain\u003E$\u003Eb__0_12",
+    "RelativePath": "api/processing-core/contracts/{contractId:long}/tree-summaries",
+    "HttpMethod": "GET",
+    "IsController": false,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "contractId",
+        "Type": "System.Int64",
+        "IsRequired": true
+      },
+      {
+        "Name": "limit",
+        "Type": "System.Nullable\u00601[[System.Int32, System.Private.CoreLib, Version=10.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e]]",
+        "IsRequired": false
+      },
+      {
+        "Name": "offset",
+        "Type": "System.Nullable\u00601[[System.Int32, System.Private.CoreLib, Version=10.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e]]",
+        "IsRequired": false
+      }
+    ],
+    "ReturnTypes": [
+      {
+        "Type": "System.Void",
+        "MediaTypes": [],
+        "StatusCode": 200
+      }
+    ],
+    "Tags": [
+      "Contract"
+    ],
+    "EndpointName": "GetContractTreeSummary",
+    "Summary": "Retrieves summary of the contracts for a specified contract"
+  },
+  {
+    "ContainingType": "Program\u002B\u003C\u003Ec",
+    "Method": "\u003C\u003CMain\u003E$\u003Eb__0_67",
+    "RelativePath": "api/processing-core/contracts/{contractId:long}/usage-limits",
+    "HttpMethod": "GET",
+    "IsController": false,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "contractId",
+        "Type": "System.Int64",
+        "IsRequired": true
+      },
+      {
+        "Name": "usageLimitCodes",
+        "Type": "System.String",
+        "IsRequired": false
+      }
+    ],
+    "ReturnTypes": [
+      {
+        "Type": "System.Void",
+        "MediaTypes": [],
+        "StatusCode": 200
+      }
+    ],
+    "Tags": [
+      "Usage limit"
+    ],
+    "EndpointName": "GetUsageLimits",
+    "Summary": "Retrieves a list of usage limits for a contract"
+  },
+  {
+    "ContainingType": "Program\u002B\u003C\u003Ec",
+    "Method": "\u003C\u003CMain\u003E$\u003Eb__0_66",
+    "RelativePath": "api/processing-core/contracts/{contractId:long}/usage-limits/{usageLimitCode}",
+    "HttpMethod": "PUT",
+    "IsController": false,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "contractId",
+        "Type": "System.Int64",
+        "IsRequired": true
+      },
+      {
+        "Name": "usageLimitCode",
+        "Type": "System.String",
+        "IsRequired": true
+      },
+      {
+        "Name": "body",
+        "Type": "Unico.Mastercard.Api.Models.UsageLimitModificationRequest",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": [
+      {
+        "Type": "System.Void",
+        "MediaTypes": [],
+        "StatusCode": 200
+      }
+    ],
+    "Tags": [
+      "Usage limit"
+    ],
+    "EndpointName": "SetUsageLimit",
+    "Summary": "Adds or updates a usage limit for a given contract"
+  },
+  {
+    "ContainingType": "Program\u002B\u003C\u003Ec",
+    "Method": "\u003C\u003CMain\u003E$\u003Eb__0_68",
+    "RelativePath": "api/processing-core/contracts/{contractId:long}/usage-limits/{usageLimitCode}/original-values",
+    "HttpMethod": "PUT",
+    "IsController": false,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "contractId",
+        "Type": "System.Int64",
+        "IsRequired": true
+      },
+      {
+        "Name": "usageLimitCode",
+        "Type": "System.String",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": [
+      {
+        "Type": "System.Void",
+        "MediaTypes": [],
+        "StatusCode": 200
+      }
+    ],
+    "Tags": [
+      "Usage limit"
+    ],
+    "EndpointName": "RestoreUsageLimitOriginalValues",
+    "Summary": "Restores original values of a usage limit for a given contract"
+  },
+  {
+    "ContainingType": "Program\u002B\u003C\u003Ec",
+    "Method": "\u003C\u003CMain\u003E$\u003Eb__0_69",
+    "RelativePath": "api/processing-core/contracts/{contractId:long}/usage-limits/{usageLimitCode}/resetting-counters",
+    "HttpMethod": "PUT",
+    "IsController": false,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "contractId",
+        "Type": "System.Int64",
+        "IsRequired": true
+      },
+      {
+        "Name": "usageLimitCode",
+        "Type": "System.String",
+        "IsRequired": true
+      },
+      {
+        "Name": "body",
+        "Type": "Unico.Mastercard.Api.Models.UsageLimitResettingRequest",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": [
+      {
+        "Type": "System.Void",
+        "MediaTypes": [],
+        "StatusCode": 200
+      }
+    ],
+    "Tags": [
+      "Usage limit"
+    ],
+    "EndpointName": "ResetUsageLimitCounters",
+    "Summary": "Resets counters for a specified usage limit for a given contract"
+  },
+  {
+    "ContainingType": "Program\u002B\u003C\u003Ec",
+    "Method": "\u003C\u003CMain\u003E$\u003Eb__0_70",
+    "RelativePath": "api/processing-core/contracts/{contractId:long}/usage-limits/{usageLimitCode}/status",
+    "HttpMethod": "PUT",
+    "IsController": false,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "contractId",
+        "Type": "System.Int64",
+        "IsRequired": true
+      },
+      {
+        "Name": "usageLimitCode",
+        "Type": "System.String",
+        "IsRequired": true
+      },
+      {
+        "Name": "body",
+        "Type": "Unico.Mastercard.Api.Models.UsageLimitStatusRequest",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": [
+      {
+        "Type": "System.Void",
+        "MediaTypes": [],
+        "StatusCode": 200
+      }
+    ],
+    "Tags": [
+      "Usage limit"
+    ],
+    "EndpointName": "ChangeUsageLimitStatus",
+    "Summary": "Changes specified usage limit status for a given contract"
+  },
+  {
+    "ContainingType": "Program\u002B\u003C\u003Ec",
+    "Method": "\u003C\u003CMain\u003E$\u003Eb__0_3",
+    "RelativePath": "api/processing-core/contracts/{contractId}/balances",
+    "HttpMethod": "GET",
+    "IsController": false,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "contractId",
+        "Type": "System.String",
+        "IsRequired": true
+      },
+      {
+        "Name": "balanceCodes",
+        "Type": "System.String",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": [
+      {
+        "Type": "Unico.Mastercard.Api.Models.ContractBalancesResponse",
+        "MediaTypes": [
+          "application/json"
+        ],
+        "StatusCode": 200
+      }
+    ],
+    "Tags": [
+      "Mastercard Processing Core"
+    ],
+    "EndpointName": "GetContractBalances",
+    "Summary": "Retrieve balances for an account or card contract"
+  },
+  {
+    "ContainingType": "Program\u002B\u003C\u003Ec",
+    "Method": "\u003C\u003CMain\u003E$\u003Eb__0_76",
+    "RelativePath": "api/processing-core/public-keys",
+    "HttpMethod": "GET",
+    "IsController": false,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "dateTypeToSecure",
+        "Type": "System.String",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": [
+      {
+        "Type": "System.Void",
+        "MediaTypes": [],
+        "StatusCode": 200
+      }
+    ],
+    "Tags": [
+      "Security"
+    ],
+    "EndpointName": "GetPublicRsaKey",
+    "Summary": "Retrieves MP\u0027s public RSA key"
+  },
+  {
+    "ContainingType": "Program\u002B\u003C\u003Ec",
+    "Method": "\u003C\u003CMain\u003E$\u003Eb__0_62",
+    "RelativePath": "api/processing-core/transaction-documents",
+    "HttpMethod": "GET",
+    "IsController": false,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "transactionSelectorType",
+        "Type": "System.String",
+        "IsRequired": true
+      },
+      {
+        "Name": "transactionSelectorValue",
+        "Type": "System.String",
+        "IsRequired": true
+      },
+      {
+        "Name": "limit",
+        "Type": "System.Nullable\u00601[[System.Int32, System.Private.CoreLib, Version=10.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e]]",
+        "IsRequired": false
+      },
+      {
+        "Name": "offset",
+        "Type": "System.Nullable\u00601[[System.Int32, System.Private.CoreLib, Version=10.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e]]",
+        "IsRequired": false
+      }
+    ],
+    "ReturnTypes": [
+      {
+        "Type": "System.Void",
+        "MediaTypes": [],
+        "StatusCode": 200
+      }
+    ],
+    "Tags": [
+      "Transaction"
+    ],
+    "EndpointName": "GetTransactionDocuments",
+    "Summary": "Retrieves transaction documents by ID, ARN, RRN or SRN"
+  },
+  {
+    "ContainingType": "Program\u002B\u003C\u003Ec",
+    "Method": "\u003C\u003CMain\u003E$\u003Eb__0_63",
+    "RelativePath": "api/processing-core/transactions/{transactionId:long}/fees",
+    "HttpMethod": "GET",
+    "IsController": false,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "transactionId",
+        "Type": "System.Int64",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": [
+      {
+        "Type": "System.Void",
+        "MediaTypes": [],
+        "StatusCode": 200
+      }
+    ],
+    "Tags": [
+      "Transaction"
+    ],
+    "EndpointName": "GetTransactionFees",
+    "Summary": "Retrieves fees generated for a transaction"
+  },
+  {
+    "ContainingType": "Program\u002B\u003C\u003Ec",
+    "Method": "\u003C\u003CMain\u003E$\u003Eb__0_65",
+    "RelativePath": "api/processing-core/transactions/{transactionId:long}/reversals",
+    "HttpMethod": "POST",
+    "IsController": false,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "transactionId",
+        "Type": "System.Int64",
+        "IsRequired": true
+      },
+      {
+        "Name": "body",
+        "Type": "Unico.Mastercard.Api.Models.ReverseTransactionReasonRequest",
+        "IsRequired": true
+      },
+      {
+        "Name": "idempotencyKey",
+        "Type": "System.String",
+        "IsRequired": false
+      }
+    ],
+    "ReturnTypes": [
+      {
+        "Type": "System.Void",
+        "MediaTypes": [],
+        "StatusCode": 200
+      }
+    ],
+    "Tags": [
+      "Transaction"
+    ],
+    "EndpointName": "ReverseTransaction",
+    "Summary": "Reverses selected transaction made by the Issuer"
+  }
+]
